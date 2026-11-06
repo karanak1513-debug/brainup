@@ -1,0 +1,347 @@
+{
+  "superAdminEmail": "anushkabhatt96@gmail.com",
+  "approvedAdmins": [
+    "anushkabhatt96@gmail.com"
+  ],
+  "systemAnnouncement": "\ud83c\udf0c Cosmic Singularity Arena is live across all dimensions!",
+  "adminRequests": [
+    {
+      "id": "req_1791351203110",
+      "userId": "explorer_default",
+      "name": "Dr. Nova Vance",
+      "email": "nova.vance@multiverse.ai",
+      "reason": "Requesting admin clearance to view the Multiverse Admin Panel.",
+      "requestedAt": "2026-10-07 05:33:23 UTC",
+      "status": "PENDING",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "id": "req_1791350647167",
+      "userId": "explorer_default",
+      "name": "Dr. Nova Vance",
+      "email": "nova.vance@multiverse.ai",
+      "reason": "Need access to inspect dimensional puzzles.",
+      "requestedAt": "2026-10-07 05:24:07 UTC",
+      "status": "APPROVED",
+      "reviewedBy": "anushkabhatt96@gmail.com",
+      "reviewedAt": "2026-10-07 05:26:15 UTC"
+    },
+    {
+      "id": "req_demo_01",
+      "userId": "alex_orion",
+      "name": "Alex Orion",
+      "email": "alex.orion@multiverse.ai",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Cipher&backgroundColor=10b981",
+      "reason": "Requesting access to monitor dimensional scoreboards and verify tournament puzzles.",
+      "requestedAt": "2026-10-07T08:15:00Z",
+      "status": "PENDING",
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log_1791351203110",
+      "timestamp": "2026-10-07 05:33:23 UTC",
+      "actor": "nova.vance@multiverse.ai",
+      "action": "ACCESS_REQUESTED",
+      "details": "Explorer Dr. Nova Vance (nova.vance@multiverse.ai) requested admin clearance"
+    },
+    {
+      "id": "log_1791350798469",
+      "timestamp": "2026-10-07 05:26:38 UTC",
+      "actor": "anushkabhatt96@gmail.com",
+      "action": "ADMIN_REVOKED",
+      "details": "Admin privileges revoked from nova.vance@multiverse.ai by anushkabhatt96@gmail.com"
+    },
+    {
+      "id": "log_1791350775781",
+      "timestamp": "2026-10-07 05:26:15 UTC",
+      "actor": "anushkabhatt96@gmail.com",
+      "action": "ACCESS_APPROVED",
+      "details": "Admin clearance granted to nova.vance@multiverse.ai by anushkabhatt96@gmail.com"
+    },
+    {
+      "id": "log_1791350647167",
+      "timestamp": "2026-10-07 05:24:07 UTC",
+      "actor": "nova.vance@multiverse.ai",
+      "action": "ACCESS_REQUESTED",
+      "details": "Explorer Dr. Nova Vance (nova.vance@multiverse.ai) requested admin clearance"
+    },
+    {
+      "id": "log_1791350638390",
+      "timestamp": "2026-10-07 05:23:58 UTC",
+      "actor": "nova.vance@multiverse.ai",
+      "action": "USER_REGISTERED",
+      "details": "Explorer Dr. Nova Vance (nova.vance@multiverse.ai) logged in with role USER"
+    },
+    {
+      "id": "log_init_001",
+      "timestamp": "2026-10-07 05:00:00 UTC",
+      "actor": "System Core",
+      "action": "MULTIVERSE_BOOT",
+      "details": "Super Admin access designated exclusively to anushkabhatt96@gmail.com"
+    }
+  ],
+  "users": {
+    "anushkabhatt96": {
+      "id": "anushkabhatt96",
+      "name": "Anushka Bhatt",
+      "email": "anushkabhatt96@gmail.com",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=AnushkaBhatt&backgroundColor=8b5cf6",
+      "role": "SUPER_ADMIN",
+      "isAdmin": true,
+      "rank": "Omniversal Grand Architect",
+      "level": 5,
+      "totalScore": 5000,
+      "currentStreak": 15,
+      "highestStreak": 25,
+      "dimension": "Deep Cosmos Violet",
+      "gameStats": {
+        "sudoku": {
+          "played": 20,
+          "won": 20,
+          "score": 1000
+        },
+        "riddles": {
+          "played": 20,
+          "won": 20,
+          "score": 1000
+        },
+        "logic": {
+          "played": 20,
+          "won": 20,
+          "score": 1000
+        },
+        "math": {
+          "played": 20,
+          "won": 20,
+          "score": 1000
+        },
+        "arrow": {
+          "played": 10,
+          "won": 10,
+          "score": 500
+        },
+        "memory": {
+          "played": 10,
+          "won": 10,
+          "score": 500
+        }
+      },
+      "isSuperAdmin": true,
+      "adminRequestStatus": "NOT_REQUESTED",
+      "systemAnnouncement": "\ud83c\udf0c Cosmic Singularity Arena is live across all dimensions!"
+    },
+    "explorer_default": {
+      "id": "explorer_default",
+      "name": "Dr. Nova Vance",
+      "email": "nova.vance@multiverse.ai",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=NovaVance&backgroundColor=8b5cf6",
+      "role": "USER",
+      "isAdmin": false,
+      "rank": "Level 4 - Nebula Grandmaster",
+      "level": 4,
+      "totalScore": 1889,
+      "currentStreak": 1,
+      "highestStreak": 9,
+      "dimension": "Deep Cosmos Violet",
+      "gameStats": {
+        "sudoku": {
+          "played": 6,
+          "won": 5,
+          "score": 315
+        },
+        "riddles": {
+          "played": 10,
+          "won": 9,
+          "score": 320
+        },
+        "logic": {
+          "played": 7,
+          "won": 6,
+          "score": 245
+        },
+        "math": {
+          "played": 4,
+          "won": 4,
+          "score": 120
+        },
+        "arrow": {
+          "played": 3,
+          "won": 3,
+          "score": 90
+        },
+        "memory": {
+          "played": 14,
+          "won": 14,
+          "score": 849
+        }
+      },
+      "isSuperAdmin": false,
+      "adminRequestStatus": "PENDING",
+      "systemAnnouncement": "\ud83c\udf0c Cosmic Singularity Arena is live across all dimensions!"
+    },
+    "alex_orion": {
+      "id": "alex_orion",
+      "name": "Alex Orion",
+      "email": "alex.orion@multiverse.ai",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Cipher&backgroundColor=10b981",
+      "role": "USER",
+      "isAdmin": false,
+      "rank": "Level 2 - Astro Apprentice",
+      "level": 2,
+      "totalScore": 420,
+      "currentStreak": 3,
+      "highestStreak": 5,
+      "dimension": "Matrix Emerald",
+      "gameStats": {
+        "sudoku": {
+          "played": 3,
+          "won": 2,
+          "score": 120
+        },
+        "riddles": {
+          "played": 4,
+          "won": 3,
+          "score": 150
+        },
+        "logic": {
+          "played": 3,
+          "won": 2,
+          "score": 90
+        },
+        "math": {
+          "played": 2,
+          "won": 2,
+          "score": 60
+        },
+        "arrow": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "memory": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        }
+      }
+    },
+    "nova_vance": {
+      "id": "nova_vance",
+      "name": "Dr. Nova Vance",
+      "email": "nova.vance@multiverse.ai",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=nova_vance&backgroundColor=8b5cf6",
+      "role": "USER",
+      "isAdmin": false,
+      "isSuperAdmin": false,
+      "rank": "Level 1 - Quantum Novice",
+      "level": 1,
+      "totalScore": 100,
+      "currentStreak": 1,
+      "highestStreak": 1,
+      "dimension": "Deep Cosmos Violet",
+      "gameStats": {
+        "sudoku": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "riddles": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "logic": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "math": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "arrow": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        },
+        "memory": {
+          "played": 0,
+          "won": 0,
+          "score": 0
+        }
+      },
+      "adminRequestStatus": "NOT_REQUESTED",
+      "systemAnnouncement": "\ud83c\udf0c Cosmic Singularity Arena is live across all dimensions!"
+    }
+  },
+  "leaderboard": [
+    {
+      "rank": 1,
+      "name": "Anushka Bhatt",
+      "title": "Omniversal Grand Architect",
+      "score": 5000,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=AnushkaBhatt&backgroundColor=8b5cf6",
+      "streak": 25,
+      "dimension": "Deep Cosmos Violet"
+    },
+    {
+      "rank": 2,
+      "name": "Vesper Hyperion",
+      "title": "Omniversal Oracle",
+      "score": 3840,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Vesper&backgroundColor=06b6d4",
+      "streak": 18,
+      "dimension": "Cyber Neon"
+    },
+    {
+      "rank": 3,
+      "name": "Lyra Chronos",
+      "title": "Singularity Sage",
+      "score": 3210,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Lyra&backgroundColor=8b5cf6",
+      "streak": 14,
+      "dimension": "Deep Cosmos Violet"
+    },
+    {
+      "rank": 4,
+      "name": "Aetherion Vance",
+      "title": "Nebula Grandmaster",
+      "score": 2750,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Aetherion&backgroundColor=f59e0b",
+      "streak": 12,
+      "dimension": "Solar Flare Orange"
+    },
+    {
+      "rank": 5,
+      "name": "Cipher Zero",
+      "title": "Matrix Architect",
+      "score": 2420,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Cipher&backgroundColor=10b981",
+      "streak": 11,
+      "dimension": "Matrix Emerald"
+    },
+    {
+      "rank": 6,
+      "name": "Dr. Nova Vance",
+      "title": "Level 4 - Nebula Grandmaster",
+      "score": 1889,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=NovaVance&backgroundColor=8b5cf6",
+      "streak": 9,
+      "dimension": "Deep Cosmos Violet"
+    },
+    {
+      "rank": 7,
+      "name": "Dr. Nova Vance",
+      "title": "Level 1 - Quantum Novice",
+      "score": 100,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=nova_vance&backgroundColor=8b5cf6",
+      "streak": 1,
+      "dimension": "Deep Cosmos Violet"
+    }
+  ]
+}
