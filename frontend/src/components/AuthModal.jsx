@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Sparkles, User, ShieldCheck, Crown, Mail, ArrowRight } from 'lucide-react';
+import Avatar from './Avatar';
 import { sounds } from '../utils/soundFX';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
@@ -178,10 +179,10 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                     : 'border-white/10 hover:border-white/30 bg-black/40 opacity-70 hover:opacity-100'
                 }`}
               >
-                <img
+                <Avatar
                   src={`https://api.dicebear.com/7.x/bottts/svg?seed=${av.id}&backgroundColor=${av.bg}`}
-                  alt={av.label}
-                  className="w-9 h-9 rounded-xl"
+                  name={av.label}
+                  size="sm"
                 />
               </button>
             ))}

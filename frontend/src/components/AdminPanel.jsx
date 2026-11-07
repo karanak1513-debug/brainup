@@ -28,6 +28,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { sounds } from '../utils/soundFX';
+import Avatar from './Avatar';
 
 export default function AdminPanel({ currentUser, onReturnToHub }) {
   const [activeTab, setActiveTab] = useState('approvals'); // 'approvals' | 'users' | 'arenas' | 'audit'
@@ -585,10 +586,10 @@ export default function AdminPanel({ currentUser, onReturnToHub }) {
                     className="p-4 rounded-2xl bg-black/40 border border-amber-500/30 hover:border-amber-400/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <img
-                        src={req.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=User&backgroundColor=8b5cf6'}
-                        alt={req.name}
-                        className="w-11 h-11 rounded-xl border border-white/20"
+                      <Avatar
+                        src={req.avatar}
+                        name={req.name}
+                        size="md"
                       />
                       <div>
                         <div className="flex items-center gap-2">
@@ -821,10 +822,10 @@ export default function AdminPanel({ currentUser, onReturnToHub }) {
                       {/* Name & Avatar */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
-                          <img
-                            src={user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=User&backgroundColor=8b5cf6'}
-                            alt={user.name}
-                            className="w-9 h-9 rounded-xl border border-white/20"
+                          <Avatar
+                            src={user.avatar}
+                            name={user.name}
+                            size="sm"
                           />
                           <div>
                             <span className="font-bold text-white block text-xs">{user.name}</span>

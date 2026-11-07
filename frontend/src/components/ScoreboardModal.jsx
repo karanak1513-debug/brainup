@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trophy, Medal, Zap, Star, Target } from 'lucide-react';
+import { X, Trophy, Medal, Zap, Star, Target, Crown } from 'lucide-react';
+import Avatar from './Avatar';
 import { sounds } from '../utils/soundFX';
 
 export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
@@ -37,15 +38,18 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl p-6 sm:p-8 rounded-3xl glass-panel border border-white/20 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-2xl p-5 sm:p-8 rounded-3xl glass-panel border border-white/20 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Ambient Glow */}
+        <div className="absolute top-0 right-1/4 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+
         {/* Close Button */}
         <button
           onClick={() => {
             sounds.playClick();
             onClose();
           }}
-          className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all z-10"
+          className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all z-10 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -68,7 +72,7 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
               sounds.playClick();
               setActiveTab('leaderboard');
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-orbitron font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-orbitron font-bold transition-all cursor-pointer ${
               activeTab === 'leaderboard'
                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
                 : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
@@ -81,7 +85,7 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
               sounds.playClick();
               setActiveTab('breakdown');
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-orbitron font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-orbitron font-bold transition-all cursor-pointer ${
               activeTab === 'breakdown'
                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
                 : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
@@ -122,11 +126,11 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
                         )}
                       </div>
 
-                      {/* Avatar */}
-                      <img
+                      {/* Avatar with fallback */}
+                      <Avatar
                         src={item.avatar}
-                        alt={item.name}
-                        className="w-10 h-10 rounded-xl bg-black/40 border border-white/15"
+                        name={item.name}
+                        size="md"
                       />
 
                       {/* Name & Title */}
@@ -149,12 +153,15 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
 
                     {/* Score & Streak */}
                     <div className="text-right">
-                      <span className="text-base sm:text-lg font-orbitron font-bold text-amber-400 block">
-                        {item.score} IQ
+                      <span className="font-orbitron font-black text-sm sm:text-base text-amber-400 block">
+                        {item.score} <span className="text-[10px] text-slate-400 font-mono">IQ</span>
                       </span>
-                      <span className="text-[11px] font-mono text-purple-300">
-                        {item.streak}x Best Streak
-                      </span>
+                      {item.streak > 1 && (
+                        <span className="text-[10px] font-mono text-cyan-400 flex items-center justify-end gap-0.5">
+                          <Zap className="w-2.5 h-2.5" />
+                          {item.streak}x combo
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -163,44 +170,41 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
           </div>
         )}
 
-        {/* Tab 2: My IQ Performance Breakdown */}
+        {/* Tab 2: Performance Breakdown */}
         {activeTab === 'breakdown' && (
-          <div className="overflow-y-auto space-y-3 flex-1 pr-1">
-            {/* Aggregate Overview Card */}
-            <div className="grid grid-cols-3 gap-2.5 p-4 rounded-2xl bg-black/40 border border-white/10 text-center mb-2">
+          <div className="overflow-y-auto space-y-3 pr-1 flex-1">
+            {/* Aggregate Stats Card */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block">TOTAL IQ SCORE</span>
-                <span className="text-xl sm:text-2xl font-orbitron font-extrabold text-amber-400">
-                  {userProfile?.totalScore || 850}
+                <span className="text-[11px] font-mono text-slate-400 block uppercase">Total IQ Points</span>
+                <span className="text-xl sm:text-2xl font-orbitron font-black text-amber-400">
+                  {userProfile?.totalScore || 0}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block">CURRENT RANK</span>
-                <span className="text-sm sm:text-base font-orbitron font-bold text-cyan-400 truncate block">
-                  {userProfile?.rank || 'Level 1 Explorer'}
+                <span className="text-[11px] font-mono text-slate-400 block uppercase">Highest Streak</span>
+                <span className="text-xl sm:text-2xl font-orbitron font-black text-cyan-400">
+                  {userProfile?.highestStreak || 1}x
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-mono text-slate-400 block">MAX STREAK</span>
-                <span className="text-xl sm:text-2xl font-orbitron font-extrabold text-purple-400">
-                  {userProfile?.highestStreak || 9}x
+                <span className="text-[11px] font-mono text-slate-400 block uppercase">Current Rank</span>
+                <span className="text-sm sm:text-base font-orbitron font-bold text-purple-300 truncate block mt-1">
+                  {userProfile?.rank || 'Explorer'}
                 </span>
               </div>
             </div>
 
-            {/* Per-Game Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* Arena By Arena Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               {GAME_INFO.map((g) => {
-                const gameStat = stats[g.key] || { played: 0, won: 0, score: 0 };
-                const winRate =
-                  gameStat.played > 0
-                    ? Math.round((gameStat.won / gameStat.played) * 100)
-                    : 0;
+                const s = stats[g.key] || { played: 0, won: 0, score: 0 };
+                const winRate = s.played > 0 ? Math.round((s.won / s.played) * 100) : 0;
 
                 return (
                   <div
                     key={g.key}
-                    className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between"
+                    className="p-3.5 rounded-2xl glass-card border border-white/10 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="text-2xl">{g.icon}</span>
@@ -208,14 +212,14 @@ export default function ScoreboardModal({ isOpen, onClose, userProfile }) {
                         <span className="font-space font-bold text-xs text-white block">
                           {g.name}
                         </span>
-                        <span className="text-[11px] font-mono text-slate-400">
-                          {gameStat.won}/{gameStat.played} Won ({winRate}%)
+                        <span className="text-[10px] font-mono text-slate-400 block">
+                          {s.won}/{s.played} Cleared ({winRate}%)
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="font-orbitron font-bold text-sm text-cyan-300">
-                        {gameStat.score} PTS
+                      <span className={`font-orbitron font-bold text-sm ${g.color}`}>
+                        {s.score} PTS
                       </span>
                     </div>
                   </div>

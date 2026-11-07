@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Shield, Clock, CheckCircle2, AlertCircle, Send, Sparkles } from 'lucide-react';
+import Avatar from './Avatar';
 import { sounds } from '../utils/soundFX';
 
 export default function AdminRequestModal({
@@ -87,10 +88,10 @@ export default function AdminRequestModal({
 
         {/* User Identity Card */}
         <div className="mb-5 p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-3">
-          <img
-            src={userProfile?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=User&backgroundColor=8b5cf6'}
-            alt="User avatar"
-            className="w-11 h-11 rounded-xl border border-white/20"
+          <Avatar
+            src={userProfile?.avatar}
+            name={userProfile?.name}
+            size="md"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">

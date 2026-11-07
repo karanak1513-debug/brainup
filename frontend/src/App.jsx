@@ -23,6 +23,7 @@ export default function App() {
   const [currentDimension, setCurrentDimension] = useState('cosmos-violet');
   const [view, setView] = useState('landing'); // 'landing' | 'hub' | 'game' | 'admin'
   const [activeGameId, setActiveGameId] = useState(null);
+  const [pendingGameId, setPendingGameId] = useState(null);
   const [isWarping, setIsWarping] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -91,10 +92,14 @@ export default function App() {
     }, 1300);
   };
 
-  // Begin button on Landing Screen
-  const handleBegin = () => {
+  // Begin button on Landing Screen (supports direct launch into an arena)
+  const handleBegin = (targetGameId = null) => {
     if (!isLoggedIn) {
+      setPendingGameId(targetGameId);
       setAuthModalOpen(true);
+    } else if (targetGameId) {
+      setActiveGameId(targetGameId);
+      triggerHyperspaceWarp('game');
     } else {
       triggerHyperspaceWarp('hub');
     }
@@ -108,7 +113,13 @@ export default function App() {
     if (profile.systemAnnouncement) {
       setSystemAnnouncement(profile.systemAnnouncement);
     }
-    triggerHyperspaceWarp('hub');
+    if (pendingGameId) {
+      setActiveGameId(pendingGameId);
+      setPendingGameId(null);
+      triggerHyperspaceWarp('game');
+    } else {
+      triggerHyperspaceWarp('hub');
+    }
   };
 
   // Switch between Admin Panel and User Panel
@@ -247,17 +258,35 @@ export default function App() {
           <LandingHero onBegin={handleBegin} />
         )}
 
-        {/* View 2: User Panel / Game Hub (Intact and Unaltered) */}
+        {/* View 2: User Panel / Game Hub */}
         {view === 'hub' && (
-          <div className="w-full flex flex-col items-center animate-fade-in">
-            {/* Hub Header */}
-            <div className="text-center mb-1">
-              <span className="text-xs font-mono tracking-widest text-cyan-400 uppercase">
-                QUANTUM DICE INTERFACE // 6 MIND ARENAS
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-orbitron text-white">
-                Choose Your Cognitive Dimension
-              </h2>
+          <div className="w-full max-w-6xl mx-auto flex flex-col items-center animate-fade-in px-2">
+            {/* Hub Header & Navigation */}
+            <div className="w-full flex items-center justify-between mb-2 px-2 sm:px-4">
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  setView('landing');
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-slate-300 hover:text-white transition-all backdrop-blur-md active:scale-95"
+              >
+                <span>←</span>
+                <span>Orbit Home</span>
+              </button>
+
+              <div className="text-center">
+                <span className="text-[10px] sm:text-xs font-mono tracking-widest text-cyan-400 uppercase">
+                  QUANTUM DICE INTERFACE // 6 MIND ARENAS
+                </span>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-orbitron text-white">
+                  Choose Your Cognitive Dimension
+                </h2>
+              </div>
+
+              <div className="text-[11px] font-mono text-slate-400 hidden sm:flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Drag to Rotate Dice</span>
+              </div>
             </div>
 
             {/* Interactive 3D Cube Dice */}
