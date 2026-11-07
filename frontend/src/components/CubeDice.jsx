@@ -1,77 +1,138 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { sounds } from '../utils/soundFX';
-import { getLevelDifficulty, DIFFICULTY_CONFIG } from '../utils/levels';
-import { Dices, Play, RotateCw, Sparkles, Zap, MousePointerClick, Layers } from 'lucide-react';
+import { Dices, Play, RotateCw, MousePointerClick } from 'lucide-react';
 
 export const GAMES = [
   {
     id: 'sudoku',
-    faceIndex: 0,
+    pipCount: 1,
     number: '01',
     name: 'Sudoku Blitz',
     badge: 'Matrix Logic',
     icon: '🧩',
     desc: 'Solve the cosmic number matrix without quadrant conflicts.',
-    targetRotation: { x: 0, y: -Math.PI / 2, z: 0 },
+    faceDir: '+Z', // Front Face
+    targetRotation: { x: 0.28, y: -0.32, z: 0.04 },
     color: '#00F0FF'
   },
   {
     id: 'riddles',
-    faceIndex: 1,
+    pipCount: 2,
     number: '02',
     name: 'Cosmic Riddles',
     badge: 'Lateral Thinking',
     icon: '🔮',
     desc: 'Unravel deep spacetime paradoxes & astronomical mysteries.',
-    targetRotation: { x: 0, y: Math.PI / 2, z: 0 },
+    faceDir: '+X', // Right Face
+    targetRotation: { x: 0.28, y: -Math.PI / 2 - 0.32, z: 0.04 },
     color: '#EC4899'
   },
   {
     id: 'logic',
-    faceIndex: 2,
+    pipCount: 3,
     number: '03',
     name: 'Logic & Reasoning',
     badge: 'Cognitive Matrix',
     icon: '⚡',
     desc: 'Identify quantum sequence anomalies & deductive laws.',
-    targetRotation: { x: Math.PI / 2, y: 0, z: 0 },
+    faceDir: '+Y', // Top Face
+    targetRotation: { x: Math.PI / 2 - 0.28, y: 0, z: -0.32 },
     color: '#8B5CF6'
   },
   {
     id: 'math',
-    faceIndex: 3,
+    pipCount: 4,
     number: '04',
     name: 'Rapid Math Sprint',
     badge: 'Speed Sprint',
     icon: '🚀',
     desc: 'High-speed mental arithmetic against the cosmic clock.',
-    targetRotation: { x: -Math.PI / 2, y: 0, z: 0 },
+    faceDir: '-Y', // Bottom Face (opposite 3)
+    targetRotation: { x: -Math.PI / 2 + 0.28, y: 0, z: 0.32 },
     color: '#F59E0B'
   },
   {
     id: 'arrow',
-    faceIndex: 4,
+    pipCount: 5,
     number: '05',
     name: 'Arrow Treasure Hunt',
     badge: 'Spatial Vector',
     icon: '🧭',
     desc: 'Memorize vector trajectories to unlock the Singularity Vault.',
-    targetRotation: { x: 0, y: 0, z: 0 },
+    faceDir: '-X', // Left Face (opposite 2)
+    targetRotation: { x: 0.28, y: Math.PI / 2 - 0.32, z: 0.04 },
     color: '#10B981'
   },
   {
     id: 'memory',
-    faceIndex: 5,
+    pipCount: 6,
     number: '06',
     name: 'Quantum Memory Grid',
     badge: 'Visual Recall',
     icon: '🌌',
     desc: 'Match entangled cosmic celestial artifacts in minimum moves.',
-    targetRotation: { x: 0, y: Math.PI, z: 0 },
+    faceDir: '-Z', // Back Face (opposite 1)
+    targetRotation: { x: 0.28, y: Math.PI - 0.32, z: 0.04 },
     color: '#3B82F6'
   }
 ];
+
+// Helper to draw authentic 3D dice pips (dots 1 to 6)
+function drawDicePips(ctx, count, color) {
+  const pipMap = {
+    1: [[384, 384]],
+    2: [[210, 210], [558, 558]],
+    3: [[210, 210], [384, 384], [558, 558]],
+    4: [[210, 210], [558, 210], [210, 558], [558, 558]],
+    5: [[210, 210], [558, 210], [384, 384], [210, 558], [558, 558]],
+    6: [[210, 210], [558, 210], [210, 384], [558, 384], [210, 558], [558, 558]]
+  };
+
+  const points = pipMap[count] || [[384, 384]];
+  const pipR = count === 1 ? 58 : count >= 5 ? 36 : 42;
+
+  points.forEach(([px, py]) => {
+    // 1. Recessed 3D Bevel Shadow (socket indent)
+    ctx.beginPath();
+    ctx.arc(px, py, pipR + 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.fill();
+
+    // 2. Glowing Outer Neon Rim
+    ctx.beginPath();
+    ctx.arc(px, py, pipR + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3.5;
+    ctx.stroke();
+
+    // 3. Core Radial Gradient (illuminated gemstone / quantum pip)
+    const pipGrad = ctx.createRadialGradient(
+      px - pipR * 0.25,
+      py - pipR * 0.25,
+      pipR * 0.1,
+      px,
+      py,
+      pipR
+    );
+    pipGrad.addColorStop(0, '#ffffff');
+    pipGrad.addColorStop(0.35, '#ffffff');
+    pipGrad.addColorStop(0.7, color);
+    pipGrad.addColorStop(1, '#040714');
+
+    ctx.beginPath();
+    ctx.arc(px, py, pipR, 0, Math.PI * 2);
+    ctx.fillStyle = pipGrad;
+    ctx.fill();
+
+    // 4. Glass Specular Highlight
+    ctx.beginPath();
+    ctx.arc(px - pipR * 0.32, py - pipR * 0.32, pipR * 0.24, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.fill();
+  });
+}
 
 // Helper to create glowing futuristic high-DPI Canvas Texture for each face
 function createFaceTexture(game, dimensionColor) {
@@ -80,16 +141,16 @@ function createFaceTexture(game, dimensionColor) {
   canvas.height = 768;
   const ctx = canvas.getContext('2d');
 
-  // Background gradient
+  // Background gradient with deep cosmic dark acrylic feel
   const grad = ctx.createLinearGradient(0, 0, 768, 768);
-  grad.addColorStop(0, '#0c0f24');
-  grad.addColorStop(0.5, '#060714');
+  grad.addColorStop(0, '#0e122b');
+  grad.addColorStop(0.5, '#070918');
   grad.addColorStop(1, '#04050d');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 768, 768);
 
   // Subtle sci-fi grid overlay
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
   ctx.lineWidth = 1;
   const step = 48;
   for (let x = 0; x <= 768; x += step) {
@@ -105,97 +166,92 @@ function createFaceTexture(game, dimensionColor) {
     ctx.stroke();
   }
 
-  // Outer Neon Border
+  // Rounded Die Face Border
+  ctx.save();
   ctx.strokeStyle = game.color;
-  ctx.lineWidth = 18;
-  ctx.strokeRect(24, 24, 720, 720);
-
-  // Inner subtle neon border
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(42, 42, 684, 684);
-
-  // Sci-fi Corner Brackets
-  ctx.fillStyle = game.color;
-  const bSize = 54;
-  const bThick = 9;
-  // Top-Left
-  ctx.fillRect(48, 48, bSize, bThick);
-  ctx.fillRect(48, 48, bThick, bSize);
-  // Top-Right
-  ctx.fillRect(768 - 48 - bSize, 48, bSize, bThick);
-  ctx.fillRect(768 - 48 - bThick, 48, bThick, bSize);
-  // Bottom-Left
-  ctx.fillRect(48, 768 - 48 - bThick, bSize, bThick);
-  ctx.fillRect(48, 768 - 48 - bSize, bThick, bSize);
-  // Bottom-Right
-  ctx.fillRect(768 - 48 - bSize, 768 - 48 - bThick, bSize, bThick);
-  ctx.fillRect(768 - 48 - bThick, 768 - 48 - bSize, bThick, bSize);
-
-  // Header Face Tag: FACE 01 // 100 LEVELS
-  ctx.font = '700 32px "Orbitron", monospace';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = game.color;
-  ctx.shadowBlur = 10;
-  ctx.fillText(`FACE ${game.number} • 100 LEVELS`, 384, 125);
-  ctx.shadowBlur = 0;
-
-  // Difficulty spectrum sub-tag
-  ctx.font = '600 20px "Orbitron", monospace';
-  ctx.fillStyle = game.color;
-  ctx.fillText('EASY ➔ MEDIUM ➔ HARD ➔ SUPER HARD', 384, 165);
-
-  // Center Icon Circle Glow
-  ctx.beginPath();
-  ctx.arc(384, 305, 110, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-  ctx.fill();
-  ctx.strokeStyle = game.color;
-  ctx.lineWidth = 5;
-  ctx.stroke();
-
-  // Emoji / Icon
-  ctx.font = '115px "Segoe UI Emoji", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(game.icon, 384, 305);
-
-  // Game Title
-  ctx.font = '900 48px "Orbitron", sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = game.color;
-  ctx.shadowBlur = 24;
-  ctx.fillText(game.name.toUpperCase(), 384, 485);
-  ctx.shadowBlur = 0;
-
-  // Short Description
-  ctx.font = '400 25px "Inter", sans-serif';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText(game.desc, 384, 550, 640);
-
-  // High-contrast "SINGLE-CLICK TO LAUNCH" Cyber Pill Button
-  const btnY = 620;
-  const btnW = 540;
-  const btnH = 74;
-  const btnX = (768 - btnW) / 2;
-
-  // Pill Background
-  ctx.fillStyle = game.color;
+  ctx.lineWidth = 14;
   ctx.beginPath();
   if (ctx.roundRect) {
-    ctx.roundRect(btnX, btnY, btnW, btnH, 37);
+    ctx.roundRect(28, 28, 712, 712, 72);
   } else {
-    ctx.rect(btnX, btnY, btnW, btnH);
+    ctx.rect(28, 28, 712, 712);
   }
-  ctx.fill();
+  ctx.stroke();
 
-  // Button Text
-  ctx.font = '900 28px "Orbitron", monospace';
-  ctx.fillStyle = '#060714';
+  // Subtle inner border
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(46, 46, 676, 676, 56);
+  } else {
+    ctx.rect(46, 46, 676, 676);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // 1. Draw Authentic 3D Dice Pips
+  drawDicePips(ctx, game.pipCount, game.color);
+
+  // 2. Header: DIE FACE #
+  ctx.save();
+  ctx.font = '700 30px "Orbitron", monospace';
+  ctx.fillStyle = game.color;
+  ctx.textAlign = 'center';
+  ctx.shadowColor = game.color;
+  ctx.shadowBlur = 12;
+  ctx.fillText(`● DIE FACE ${game.pipCount} ●`, 384, 98);
+  ctx.restore();
+
+  // 3. Center Game Icon (If 1 pip, icon sits slightly above; else center or floating)
+  ctx.save();
+  ctx.font = '72px "Segoe UI Emoji", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('▶ SINGLE-CLICK TO LAUNCH', 384, btnY + btnH / 2);
+  if (game.pipCount === 1) {
+    ctx.fillText(game.icon, 384, 250);
+  } else if (game.pipCount === 2 || game.pipCount === 4) {
+    ctx.fillText(game.icon, 384, 384);
+  } else {
+    ctx.fillText(game.icon, 384, 155);
+  }
+  ctx.restore();
+
+  // 4. Bottom Game Title & Badge Banner
+  ctx.save();
+  // Pill banner behind title
+  const bannerY = 624;
+  const bannerW = 600;
+  const bannerH = 88;
+  const bannerX = (768 - bannerW) / 2;
+
+  ctx.fillStyle = 'rgba(7, 9, 24, 0.92)';
+  ctx.strokeStyle = game.color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 44);
+  } else {
+    ctx.rect(bannerX, bannerY, bannerW, bannerH);
+  }
+  ctx.fill();
+  ctx.stroke();
+
+  // Game Name
+  ctx.font = '900 36px "Orbitron", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = game.color;
+  ctx.shadowBlur = 16;
+  ctx.fillText(game.name.toUpperCase(), 384, bannerY + 36);
+
+  // Subtitle
+  ctx.font = '700 17px "Orbitron", monospace';
+  ctx.fillStyle = game.color;
+  ctx.shadowBlur = 0;
+  ctx.fillText('100 LEVELS • CLICK TO PLAY', 384, bannerY + 66);
+  ctx.restore();
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
@@ -204,21 +260,22 @@ function createFaceTexture(game, dimensionColor) {
 
 export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
   const mountRef = useRef(null);
-  const cubeRef = useRef(null);
-  const materialsRef = useRef([]);
+  const diceGroupRef = useRef(null);
+  const faceMeshesRef = useRef([]);
   const [selectedGame, setSelectedGame] = useState(GAMES[0]);
   const [hoveredGame, setHoveredGame] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
 
   // State refs for animation loop
+  // Starts with authentic 3D isometric perspective showing 3 faces (Front, Top, Right)!
   const rotState = useRef({
-    rx: 0,
-    ry: -Math.PI / 2,
-    rz: 0,
-    targetRx: 0,
-    targetRy: -Math.PI / 2,
-    targetRz: 0,
+    rx: 0.42,
+    ry: -0.58,
+    rz: 0.08,
+    targetRx: 0.42,
+    targetRy: -0.58,
+    targetRz: 0.08,
     vx: 0,
     vy: 0,
     isDragging: false,
@@ -230,7 +287,7 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
     prevMouseY: 0,
     isTumbling: false,
     tumbleStart: 0,
-    tumbleDuration: 1800,
+    tumbleDuration: 1900,
     tumbleTarget: null,
     isLaunching: false,
     launchStart: 0,
@@ -250,10 +307,26 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
     rotState.current.launchTargetRot = game.targetRotation;
     rotState.current.launchGameId = game.id;
 
-    // After quick warp zoom, trigger game view transition
     setTimeout(() => {
       onSelectGame(game.id);
-    }, 400);
+    }, 420);
+  };
+
+  // Smoothly orient to a specific face when clicked
+  const focusGameFace = (game) => {
+    setSelectedGame(game);
+    sounds.playClick();
+    rotState.current.isTumbling = true;
+    rotState.current.tumbleStart = performance.now();
+    rotState.current.tumbleDuration = 800;
+    rotState.current.startX = rotState.current.rx;
+    rotState.current.startY = rotState.current.ry;
+    rotState.current.startZ = rotState.current.rz;
+    rotState.current.tumbleTarget = {
+      x: game.targetRotation.x,
+      y: game.targetRotation.y,
+      z: game.targetRotation.z
+    };
   };
 
   // Setup Three.js Cube
@@ -265,72 +338,118 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
     const height = mount.clientHeight;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 4.2;
+    // Perspective camera with generous field of view to show genuine 3D dice depth
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    camera.position.set(0, 0.2, 5.2);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
 
-    // Ambient and Point Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    // Dynamic 3-Point Lighting for authentic 3D dice specular highlights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    const pointLight = new THREE.PointLight(0xffffff, 2.8, 20);
-    pointLight.position.set(5, 5, 6);
-    scene.add(pointLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    keyLight.position.set(5, 6, 6);
+    scene.add(keyLight);
 
-    const backLight = new THREE.PointLight(0x8b5cf6, 2.0, 20);
-    backLight.position.set(-5, -5, -4);
-    scene.add(backLight);
+    const rimLight = new THREE.PointLight(0x00f0ff, 2.2, 25);
+    rimLight.position.set(-5, 4, -4);
+    scene.add(rimLight);
 
-    // Create 6 materials for 6 faces
-    const materials = GAMES.map((game) => {
-      const texture = createFaceTexture(game, dimension);
-      return new THREE.MeshStandardMaterial({
-        map: texture,
-        roughness: 0.22,
-        metalness: 0.12,
-        emissive: new THREE.Color(game.color),
-        emissiveIntensity: 0.12
-      });
+    const bottomLight = new THREE.PointLight(0x8b5cf6, 1.8, 20);
+    bottomLight.position.set(0, -6, 2);
+    scene.add(bottomLight);
+
+    // Root 3D Dice Group
+    const diceGroup = new THREE.Group();
+    scene.add(diceGroup);
+    diceGroupRef.current = diceGroup;
+
+    // 1. Base Beveled Rounded Die Body
+    const bodyGeometry = new RoundedBoxGeometry(2.1, 2.1, 2.1, 8, 0.22);
+    const bodyMaterial = new THREE.MeshStandardMaterial({
+      color: 0x080a1c,
+      roughness: 0.18,
+      metalness: 0.88,
+      emissive: 0x0f1230,
+      emissiveIntensity: 0.35
     });
-    materialsRef.current = materials;
+    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    diceGroup.add(bodyMesh);
 
-    // Box Geometry
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const cube = new THREE.Mesh(geometry, materials);
-    scene.add(cube);
-    cubeRef.current = cube;
-
-    // Glowing Edge Outline
-    const edges = new THREE.EdgesGeometry(geometry);
-    const lineMaterial = new THREE.LineBasicMaterial({
+    // 2. Glowing Neon Edge Outline
+    const edgeGeo = new THREE.EdgesGeometry(bodyGeometry);
+    const edgeMat = new THREE.LineBasicMaterial({
       color: 0x00f0ff,
-      linewidth: 3,
+      linewidth: 2,
       transparent: true,
       opacity: 0.75
     });
-    const edgeLines = new THREE.LineSegments(edges, lineMaterial);
-    cube.add(edgeLines);
+    const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
+    diceGroup.add(edgeLines);
+
+    // 3. Six Face Plates with authentic pips and branding
+    const facePlanes = [];
+    const faceGeometry = new THREE.PlaneGeometry(1.72, 1.72);
+
+    const faceConfigs = [
+      { game: GAMES[0], pos: [0, 0, 1.055], rot: [0, 0, 0] }, // +Z Front (1 Pip)
+      { game: GAMES[1], pos: [1.055, 0, 0], rot: [0, Math.PI / 2, 0] }, // +X Right (2 Pips)
+      { game: GAMES[2], pos: [0, 1.055, 0], rot: [-Math.PI / 2, 0, 0] }, // +Y Top (3 Pips)
+      { game: GAMES[3], pos: [0, -1.055, 0], rot: [Math.PI / 2, 0, 0] }, // -Y Bottom (4 Pips)
+      { game: GAMES[4], pos: [-1.055, 0, 0], rot: [0, -Math.PI / 2, 0] }, // -X Left (5 Pips)
+      { game: GAMES[5], pos: [0, 0, -1.055], rot: [0, Math.PI, 0] } // -Z Back (6 Pips)
+    ];
+
+    faceConfigs.forEach(({ game, pos, rot }) => {
+      const texture = createFaceTexture(game, dimension);
+      const faceMat = new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.22,
+        metalness: 0.15,
+        emissive: new THREE.Color(game.color),
+        emissiveIntensity: 0.18,
+        transparent: true
+      });
+      const plane = new THREE.Mesh(faceGeometry, faceMat);
+      plane.position.set(...pos);
+      plane.rotation.set(...rot);
+      plane.userData = { game };
+      diceGroup.add(plane);
+      facePlanes.push(plane);
+    });
+    faceMeshesRef.current = facePlanes;
+
+    // 4. Subtle Floor Shadow Disc
+    const shadowGeo = new THREE.CircleGeometry(1.6, 32);
+    const shadowMat = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.45
+    });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = -1.45;
+    scene.add(shadowMesh);
 
     // Raycaster for Face Clicks & Dynamic Glow Hovers
     const raycaster = new THREE.Raycaster();
     const mouseVec = new THREE.Vector2();
 
-    // Helper: Raycast face at client coordinates
     const getFaceAtClientPos = (clientX, clientY) => {
       const rect = renderer.domElement.getBoundingClientRect();
       mouseVec.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       mouseVec.y = -((clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(mouseVec, camera);
-      const intersects = raycaster.intersectObject(cube);
-      if (intersects.length > 0) {
-        const faceMatIndex = (intersects[0].face && typeof intersects[0].face.materialIndex === 'number')
-          ? intersects[0].face.materialIndex
-          : Math.floor(intersects[0].faceIndex / 2);
-        return { game: GAMES[faceMatIndex], faceMatIndex };
+      const intersects = raycaster.intersectObjects(facePlanes, false);
+      if (intersects.length > 0 && intersects[0].object.userData.game) {
+        return {
+          game: intersects[0].object.userData.game,
+          mesh: intersects[0].object
+        };
       }
       return null;
     };
@@ -358,14 +477,13 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
         const hit = getFaceAtClientPos(clientX, clientY);
         if (hit) {
           setHoveredGame(hit.game);
-          // Highlight the specific hovered face in 3D
-          materials.forEach((mat, idx) => {
-            mat.emissiveIntensity = idx === hit.faceMatIndex ? 0.45 : 0.12;
+          facePlanes.forEach((mesh) => {
+            mesh.material.emissiveIntensity = mesh === hit.mesh ? 0.55 : 0.16;
           });
         } else {
           setHoveredGame(null);
-          materials.forEach((mat) => {
-            mat.emissiveIntensity = 0.12;
+          facePlanes.forEach((mesh) => {
+            mesh.material.emissiveIntensity = 0.18;
           });
         }
       }
@@ -376,8 +494,8 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
       const deltaY = clientY - rotState.current.prevMouseY;
 
       rotState.current.dragDistance += Math.abs(deltaX) + Math.abs(deltaY);
-      rotState.current.vx = deltaX * 0.007;
-      rotState.current.vy = deltaY * 0.007;
+      rotState.current.vx = deltaX * 0.0075;
+      rotState.current.vy = deltaY * 0.0075;
 
       rotState.current.ry += rotState.current.vx;
       rotState.current.rx += rotState.current.vy;
@@ -392,14 +510,12 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
       const elapsed = performance.now() - rotState.current.downTime;
       const movement = Math.hypot(clientX - rotState.current.downX, clientY - rotState.current.downY);
 
-      // Distinguish a clean single-click / tap from a rotational drag
-      const isSingleClick = movement < 15 && elapsed < 450;
+      const isSingleClick = movement < 16 && elapsed < 450;
       rotState.current.isDragging = false;
 
       if (isSingleClick && !rotState.current.isLaunching) {
         const hit = getFaceAtClientPos(clientX, clientY);
         if (hit && hit.game) {
-          // SINGLE CLICK ON THE DICE FACE OPENS THE GAME DIRECTLY!
           launchGame(hit.game);
         }
       }
@@ -440,13 +556,13 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
 
         const targetRot = rotState.current.launchTargetRot;
         if (targetRot) {
-          rotState.current.rx = THREE.MathUtils.lerp(rotState.current.rx, targetRot.x, ease * 0.2);
-          rotState.current.ry = THREE.MathUtils.lerp(rotState.current.ry, targetRot.y, ease * 0.2);
-          rotState.current.rz = THREE.MathUtils.lerp(rotState.current.rz, targetRot.z, ease * 0.2);
+          rotState.current.rx = THREE.MathUtils.lerp(rotState.current.rx, targetRot.x, ease * 0.25);
+          rotState.current.ry = THREE.MathUtils.lerp(rotState.current.ry, targetRot.y, ease * 0.25);
+          rotState.current.rz = THREE.MathUtils.lerp(rotState.current.rz, targetRot.z, ease * 0.25);
         }
 
-        cube.scale.setScalar(1 + progress * 0.45);
-        camera.position.z = THREE.MathUtils.lerp(4.2, 2.7, ease);
+        diceGroup.scale.setScalar(1 + progress * 0.4);
+        camera.position.z = THREE.MathUtils.lerp(5.2, 3.2, ease);
       }
       // Tumbling / Spin Roll Sequence
       else if (rotState.current.isTumbling) {
@@ -474,12 +590,14 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
         rotState.current.vx *= 0.92;
         rotState.current.vy *= 0.92;
 
-        cube.position.y = Math.sin(elapsed * 1.5) * 0.08;
+        // Gentle floating respiration
+        diceGroup.position.y = Math.sin(elapsed * 1.6) * 0.09;
+        // Subtle organic 3D wobble so edges and depth are always alive
+        diceGroup.rotation.z = rotState.current.rz + Math.sin(elapsed * 0.8) * 0.03;
       }
 
-      cube.rotation.x = rotState.current.rx;
-      cube.rotation.y = rotState.current.ry;
-      cube.rotation.z = rotState.current.rz;
+      diceGroup.rotation.x = rotState.current.rx;
+      diceGroup.rotation.y = rotState.current.ry;
 
       renderer.render(scene, camera);
     };
@@ -498,13 +616,17 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
       if (mount && renderer.domElement) {
         mount.removeChild(renderer.domElement);
       }
-      geometry.dispose();
-      materials.forEach((m) => {
-        m.map.dispose();
-        m.dispose();
+      bodyGeometry.dispose();
+      bodyMaterial.dispose();
+      faceGeometry.dispose();
+      facePlanes.forEach((mesh) => {
+        mesh.material.map.dispose();
+        mesh.material.dispose();
       });
-      edges.dispose();
-      lineMaterial.dispose();
+      edgeGeo.dispose();
+      edgeMat.dispose();
+      shadowGeo.dispose();
+      shadowMat.dispose();
       renderer.dispose();
     };
   }, [dimension]);
@@ -538,7 +660,7 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-4 py-2">
       {/* Interactive 3D Dice Canvas Area */}
-      <div className="relative w-full h-[430px] md:h-[490px] flex items-center justify-center select-none">
+      <div className="relative w-full h-[450px] md:h-[510px] flex items-center justify-center select-none">
         <div
           ref={mountRef}
           className={`w-full h-full ${
@@ -560,10 +682,10 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
             <span className="font-mono text-xs sm:text-sm font-bold">
               {hoveredGame ? (
                 <span>
-                  SINGLE-CLICK TO OPEN: <strong className="text-white">{hoveredGame.name.toUpperCase()}</strong> (100 LEVELS)
+                  DICE FACE {hoveredGame.pipCount}: <strong className="text-white">{hoveredGame.name.toUpperCase()}</strong> (TAP TO PLAY)
                 </span>
               ) : (
-                <span>Single-click any side of dice to launch game!</span>
+                <span>🎲 3D Quantum Dice: Drag to rotate or click any face to launch!</span>
               )}
             </span>
           </div>
@@ -571,28 +693,28 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
           {/* Right: Orbit Tip */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-xs text-slate-300">
             <RotateCw className="w-3.5 h-3.5 text-purple-400 animate-spin" style={{ animationDuration: '8s' }} />
-            <span>Drag to rotate in 3D</span>
+            <span>360° Free 3D Orbit</span>
           </div>
         </div>
 
-        {/* Face Selector Mini Badges - Single click launches directly */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 md:gap-2.5 bg-black/80 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/20 shadow-2xl">
-          {GAMES.map((game, idx) => {
+        {/* Face Selector Mini Badges - Single click rotates & showcases directly */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 md:gap-2.5 bg-black/85 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/20 shadow-2xl">
+          {GAMES.map((game) => {
             const isHovered = hoveredGame && hoveredGame.id === game.id;
             const isCurrent = selectedGame.id === game.id;
             return (
               <button
                 key={game.id}
-                onClick={() => launchGame(game)}
+                onClick={() => focusGameFace(game)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 ${
                   isHovered || isCurrent
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50 scale-105 border border-purple-400'
                     : 'text-slate-300 hover:text-white hover:bg-white/15 border border-transparent'
                 }`}
-                title={`Single-click to open ${game.name} (Levels 1-100)`}
+                title={`Orient to Face ${game.pipCount}: ${game.name}`}
               >
                 <span className="text-sm">{game.icon}</span>
-                <span className="font-mono font-bold">F{idx + 1}</span>
+                <span className="font-mono font-bold">D{game.pipCount}</span>
                 <span className="hidden md:inline text-[10px] text-purple-200 uppercase">{game.name.split(' ')[0]}</span>
               </button>
             );
@@ -601,7 +723,7 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
       </div>
 
       {/* Selected Game Card with Direct Single-Click Info & Controls */}
-      <div className="w-full max-w-2xl mt-4 p-5 rounded-3xl glass-panel text-center relative overflow-hidden transition-all duration-300 border border-white/15 shadow-2xl">
+      <div className="w-full max-w-2xl mt-3 p-5 rounded-3xl glass-panel text-center relative overflow-hidden transition-all duration-300 border border-white/15 shadow-2xl">
         <div
           className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-30 pointer-events-none"
           style={{ backgroundColor: selectedGame.color }}
@@ -613,7 +735,7 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
 
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-mono font-semibold mb-2">
           <span>{selectedGame.icon}</span>
-          <span>FACE {selectedGame.number} • 100 LEVELS (EASY ➔ SUPER HARD)</span>
+          <span>DICE FACE {selectedGame.pipCount} • 100 CHALLENGE LEVELS</span>
         </div>
 
         <h3 className="text-2xl md:text-3xl font-extrabold font-orbitron tracking-wide text-white drop-shadow-md">
@@ -628,20 +750,20 @@ export default function CubeDice({ dimension, onSelectGame, activeGameId }) {
           <button
             onClick={handleRollDice}
             disabled={isSpinning || isLaunching}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm transition-all duration-200 active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm transition-all duration-200 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Dices className={`w-4 h-4 text-purple-400 ${isSpinning ? 'animate-spin' : ''}`} />
-            <span>{isSpinning ? 'Tumbling Quantum Dice...' : 'Roll Random Face'}</span>
+            <span>{isSpinning ? 'Tumbling Quantum Dice...' : 'Roll Dice (Random Face)'}</span>
           </button>
 
           <button
             onClick={() => launchGame(selectedGame)}
             disabled={isLaunching}
-            className="btn-cosmic flex items-center gap-2.5 px-8 py-3 rounded-2xl text-base font-bold font-orbitron shadow-xl"
+            className="btn-cosmic flex items-center gap-2.5 px-8 py-3 rounded-2xl text-base font-bold font-orbitron shadow-xl cursor-pointer"
             style={{ borderColor: selectedGame.color }}
           >
             <Play className="w-5 h-5 fill-current" />
-            <span>LAUNCH {selectedGame.name.toUpperCase()} (LVL 1-100)</span>
+            <span>PLAY {selectedGame.name.toUpperCase()}</span>
           </button>
         </div>
       </div>

@@ -143,7 +143,7 @@
       "isAdmin": false,
       "rank": "Level 4 - Nebula Grandmaster",
       "level": 4,
-      "totalScore": 1889,
+      "totalScore": 1944,
       "currentStreak": 1,
       "highestStreak": 9,
       "dimension": "Deep Cosmos Violet",
@@ -154,9 +154,9 @@
           "score": 315
         },
         "riddles": {
-          "played": 10,
-          "won": 9,
-          "score": 320
+          "played": 11,
+          "won": 10,
+          "score": 375
         },
         "logic": {
           "played": 7,
@@ -329,7 +329,7 @@
       "rank": 6,
       "name": "Dr. Nova Vance",
       "title": "Level 4 - Nebula Grandmaster",
-      "score": 1889,
+      "score": 1944,
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=NovaVance&backgroundColor=8b5cf6",
       "streak": 9,
       "dimension": "Deep Cosmos Violet"
