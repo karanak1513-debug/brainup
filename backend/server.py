@@ -1141,6 +1141,90 @@ def get_memory_deck(level: int = 1):
         "deck": deck
     }
 
+# ----------------- Game 7: Chromatic Reflex (Stroop) -----------------
+@app.get("/api/games/stroop")
+async def get_stroop_challenge(level: int = 1):
+    level = max(1, min(100, level))
+    difficulty = get_level_difficulty(level)
+    rng = random.Random(level * 77 + 333)
+    palette = [
+        {"name": "CYAN", "hex": "#00F0FF"},
+        {"name": "PURPLE", "hex": "#A855F7"},
+        {"name": "EMERALD", "hex": "#10B981"},
+        {"name": "AMBER", "hex": "#F59E0B"},
+        {"name": "ROSE", "hex": "#F43F5E"},
+        {"name": "INDIGO", "hex": "#6366F1"}
+    ]
+    rule_mode = "TEXT" if level >= 25 and rng.random() > 0.45 else "INK"
+    word_color = rng.choice(palette)
+    ink_candidates = [p for p in palette if p["name"] != word_color["name"]]
+    ink_color = rng.choice(ink_candidates) if rng.random() > 0.25 else word_color
+
+    correct_answer = ink_color["name"] if rule_mode == "INK" else word_color["name"]
+    options = [correct_answer]
+    while len(options) < 4:
+        cand = rng.choice(palette)["name"]
+        if cand not in options:
+            options.append(cand)
+    rng.shuffle(options)
+
+    return {
+        "level": level,
+        "difficulty": difficulty,
+        "ruleMode": rule_mode,
+        "wordText": word_color["name"],
+        "inkColor": ink_color["hex"],
+        "correctAnswer": correct_answer,
+        "options": options
+    }
+
+# ----------------- Game 8: Cosmic Word Weaver -----------------
+@app.get("/api/games/words")
+async def get_word_puzzle(level: int = 1):
+    level = max(1, min(100, level))
+    difficulty = get_level_difficulty(level)
+    words_catalog = [
+        {"word": "NOVA", "category": "Astronomy", "clue": "A cataclysmic nuclear explosion in a white dwarf star"},
+        {"word": "ATOM", "category": "Physics", "clue": "The basic building block of all universal matter"},
+        {"word": "SOLAR", "category": "Cosmology", "clue": "Relating to or determined by the Sun"},
+        {"word": "ORBIT", "category": "Astrophysics", "clue": "Curved gravitational trajectory of an object around a star or planet"},
+        {"word": "PULSAR", "category": "Astrophysics", "clue": "Rapidly rotating magnetized neutron star emitting beams of radiation"},
+        {"word": "NEBULA", "category": "Astronomy", "clue": "An interstellar cloud of dust, hydrogen, and ionized gases"},
+        {"word": "QUASAR", "category": "Astrophysics", "clue": "Extremely luminous active galactic nucleus powered by a supermassive black hole"},
+        {"word": "QUANTUM", "category": "Physics", "clue": "The minimum amount of any physical entity involved in an interaction"},
+        {"word": "SUPERNOVA", "category": "Astrophysics", "clue": "A powerful and luminous stellar explosion during late star evolution"},
+        {"word": "SINGULARITY", "category": "Astrophysics", "clue": "A condition in spacetime where gravitational force is predicted to become infinite"}
+    ]
+    idx = (level - 1) % len(words_catalog)
+    item = words_catalog[idx]
+    chars = list(item["word"])
+    rng = random.Random(level * 88 + 444)
+    shuffled = chars[:]
+    rng.shuffle(shuffled)
+
+    return {
+        "level": level,
+        "difficulty": difficulty,
+        "word": item["word"],
+        "scrambled": shuffled,
+        "clue": item["clue"],
+        "category": item["category"]
+    }
+
+# ----------------- Game 9: Spatial Rotation -----------------
+@app.get("/api/games/spatial")
+async def get_spatial_puzzle(level: int = 1):
+    level = max(1, min(100, level))
+    difficulty = get_level_difficulty(level)
+    angles = [90, 180, 270]
+    rng = random.Random(level * 99 + 555)
+    angle = rng.choice(angles)
+    return {
+        "level": level,
+        "difficulty": difficulty,
+        "targetAngle": angle
+    }
+
 # ----------------- Static Frontend Delivery -----------------
 possible_dist_dirs = [
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")),

@@ -9,19 +9,26 @@ import InviteModal from './components/InviteModal';
 import AdminPanel from './components/AdminPanel';
 import AdminRequestModal from './components/AdminRequestModal';
 
-// 6 Game Components
+// 10 Game Components
 import SudokuGame from './components/games/SudokuGame';
 import CosmicRiddlesGame from './components/games/CosmicRiddlesGame';
 import LogicReasoningGame from './components/games/LogicReasoningGame';
 import RapidMathGame from './components/games/RapidMathGame';
 import ArrowTreasureGame from './components/games/ArrowTreasureGame';
 import MemoryGridGame from './components/games/MemoryGridGame';
+import ChromaticReflexGame from './components/games/ChromaticReflexGame';
+import CosmicWordGame from './components/games/CosmicWordGame';
+import SpatialRotationGame from './components/games/SpatialRotationGame';
+import QuantumReactorGame from './components/games/QuantumReactorGame';
+
+import ArcadeGrid from './components/ArcadeGrid';
 
 import { sounds } from './utils/soundFX';
 
 export default function App() {
   const [currentDimension, setCurrentDimension] = useState('cosmos-violet');
   const [view, setView] = useState('landing'); // 'landing' | 'hub' | 'game' | 'admin'
+  const [hubMode, setHubMode] = useState('dice'); // 'dice' | 'arcade'
   const [activeGameId, setActiveGameId] = useState(null);
   const [pendingGameId, setPendingGameId] = useState(null);
   const [isWarping, setIsWarping] = useState(false);
@@ -57,7 +64,11 @@ export default function App() {
       logic: { played: 0, won: 0, score: 0 },
       math: { played: 0, won: 0, score: 0 },
       arrow: { played: 0, won: 0, score: 0 },
-      memory: { played: 0, won: 0, score: 0 }
+      memory: { played: 0, won: 0, score: 0 },
+      stroop: { played: 0, won: 0, score: 0 },
+      word: { played: 0, won: 0, score: 0 },
+      spatial: { played: 0, won: 0, score: 0 },
+      reactor: { played: 0, won: 0, score: 0 }
     }
   });
 
@@ -160,7 +171,11 @@ export default function App() {
         logic: { played: 0, won: 0, score: 0 },
         math: { played: 0, won: 0, score: 0 },
         arrow: { played: 0, won: 0, score: 0 },
-        memory: { played: 0, won: 0, score: 0 }
+        memory: { played: 0, won: 0, score: 0 },
+        stroop: { played: 0, won: 0, score: 0 },
+        word: { played: 0, won: 0, score: 0 },
+        spatial: { played: 0, won: 0, score: 0 },
+        reactor: { played: 0, won: 0, score: 0 }
       }
     });
     setView('landing');
@@ -262,7 +277,7 @@ export default function App() {
         {view === 'hub' && (
           <div className="w-full max-w-6xl mx-auto flex flex-col items-center animate-fade-in px-2">
             {/* Hub Header & Navigation */}
-            <div className="w-full flex items-center justify-between mb-2 px-2 sm:px-4">
+            <div className="w-full flex items-center justify-between mb-3 px-2 sm:px-4">
               <button
                 onClick={() => {
                   sounds.playClick();
@@ -276,7 +291,7 @@ export default function App() {
 
               <div className="text-center">
                 <span className="text-[10px] sm:text-xs font-mono tracking-widest text-cyan-400 uppercase">
-                  QUANTUM DICE INTERFACE // 6 MIND ARENAS
+                  COGNITIVE NEXUS // 10 EXPANSIVE MIND ARENAS
                 </span>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-orbitron text-white">
                   Choose Your Cognitive Dimension
@@ -285,20 +300,75 @@ export default function App() {
 
               <div className="text-[11px] font-mono text-slate-400 hidden sm:flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Drag to Rotate Dice</span>
+                <span>{hubMode === 'dice' ? 'Drag Dice to Rotate' : '1,000 Total Levels'}</span>
               </div>
             </div>
 
-            {/* Interactive 3D Cube Dice */}
-            <CubeDice
-              dimension={currentDimension}
-              onSelectGame={handleSelectGame}
-              activeGameId={activeGameId}
-            />
+            {/* Hub Interface Switcher Tabs */}
+            <div className="flex items-center gap-2 mb-4 p-1.5 rounded-2xl bg-black/50 border border-white/15 backdrop-blur-md shadow-xl">
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  setHubMode('dice');
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                  hubMode === 'dice'
+                    ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/40'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>🎲 3D Quantum Dice</span>
+              </button>
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  setHubMode('arcade');
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                  hubMode === 'arcade'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>🕹️ Multiverse Arcade (10 Arenas)</span>
+              </button>
+            </div>
+
+            {/* Hub Mode: 3D Cube Dice */}
+            {hubMode === 'dice' && (
+              <div className="w-full flex flex-col items-center">
+                <CubeDice
+                  dimension={currentDimension}
+                  onSelectGame={handleSelectGame}
+                  activeGameId={activeGameId}
+                />
+
+                <div className="mt-4 flex items-center justify-center">
+                  <button
+                    onClick={() => {
+                      sounds.playClick();
+                      setHubMode('arcade');
+                    }}
+                    className="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-purple-500/20 border border-purple-500/30 text-xs font-mono text-purple-300 hover:text-white transition-all flex items-center gap-2 group shadow-lg"
+                  >
+                    <span>✨ Explore 4 More Arenas in the Multiverse Arcade</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Hub Mode: Multiverse Arcade Grid */}
+            {hubMode === 'arcade' && (
+              <ArcadeGrid
+                onSelectGame={handleSelectGame}
+                userProfile={userProfile}
+              />
+            )}
           </div>
         )}
 
-        {/* View 3: Active Mini Game */}
+        {/* View 3: Active Mini Game (All 10 Games) */}
         {view === 'game' && (
           <div className="w-full flex flex-col items-center animate-fade-in">
             {activeGameId === 'sudoku' && (
@@ -318,6 +388,18 @@ export default function App() {
             )}
             {activeGameId === 'memory' && (
               <MemoryGridGame onExit={handleExitGame} onAddScore={handleAddScore} />
+            )}
+            {activeGameId === 'stroop' && (
+              <ChromaticReflexGame onExit={handleExitGame} onAddScore={handleAddScore} />
+            )}
+            {activeGameId === 'word' && (
+              <CosmicWordGame onExit={handleExitGame} onAddScore={handleAddScore} />
+            )}
+            {activeGameId === 'spatial' && (
+              <SpatialRotationGame onExit={handleExitGame} onAddScore={handleAddScore} />
+            )}
+            {activeGameId === 'reactor' && (
+              <QuantumReactorGame onExit={handleExitGame} onAddScore={handleAddScore} />
             )}
           </div>
         )}
