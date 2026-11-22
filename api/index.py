@@ -208,11 +208,24 @@ if "systemAnnouncement" not in DATA:
 
 # ----------------- Endpoints -----------------
 
-@app.get("/api/health")
+@app.api_route("/", methods=["GET", "HEAD"])
+def root():
+    return {
+        "status": "online",
+        "multiverse": "BrainUp Universe Engine",
+        "health": "/api/health",
+        "backend": "Render Cloud Platform",
+        "version": "1.0.0",
+        "timestamp": time.time()
+    }
+
+@app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health():
     return {
         "status": "online",
         "multiverse": "BrainUp Universe Engine",
+        "backend": "Render Cloud Platform",
         "superAdmin": SUPER_ADMIN_EMAIL,
         "timestamp": time.time()
     }
