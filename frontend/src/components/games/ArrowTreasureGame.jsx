@@ -3,7 +3,7 @@ import GameWrapper from '../GameWrapper';
 import confetti from 'canvas-confetti';
 import { sounds } from '../../utils/soundFX';
 import { getLevelDifficulty, DIFFICULTY_CONFIG } from '../../utils/levels';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Lock, Unlock, Sparkles } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Lock, Unlock, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1 }) {
   const [level, setLevel] = useState(initialLevel);
@@ -16,6 +16,7 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
   const [streak, setStreak] = useState(1);
   const [seconds, setSeconds] = useState(0);
   const [hintText, setHintText] = useState(null);
+  const [activePressedDir, setActivePressedDir] = useState(null);
 
   const difficulty = getLevelDifficulty(level);
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
@@ -29,14 +30,14 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
     setFlashIndex(-1);
 
     let seq = [];
-    let speed = 700;
+    let speed = 650;
 
     try {
       const res = await fetch(`/api/games/treasure-hunt/stage?level=${lvl}`);
       if (res.ok) {
         const data = await res.json();
         seq = data.sequence;
-        speed = data.flashSpeed || 650;
+        speed = data.flashSpeed || 600;
       }
     } catch (e) {
       console.log('Using local fallback for arrow hunt');
@@ -87,10 +88,10 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
   useEffect(() => {
     const handleKey = (e) => {
       if (isMemorizing || isUnlocked) return;
-      if (e.key === 'ArrowUp') handleInput('UP');
-      else if (e.key === 'ArrowDown') handleInput('DOWN');
-      else if (e.key === 'ArrowLeft') handleInput('LEFT');
-      else if (e.key === 'ArrowRight') handleInput('RIGHT');
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') handleInput('UP');
+      else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') handleInput('DOWN');
+      else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') handleInput('LEFT');
+      else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') handleInput('RIGHT');
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
@@ -98,6 +99,9 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
 
   const handleInput = (dir) => {
     if (isMemorizing || isUnlocked) return;
+
+    setActivePressedDir(dir);
+    setTimeout(() => setActivePressedDir(null), 180);
 
     const nextIndex = userSteps.length;
     sounds.playClick();
@@ -109,12 +113,8 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
       if (newSteps.length === sequence.length) {
         setIsUnlocked(true);
         sounds.playVictory();
-        confetti({
-          particleCount: 90,
-          spread: 80,
-          origin: { y: 0.6 }
-        });
-        const points = 80 * streak + level * 5;
+        confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+        const points = (50 + sequence.length * 10 + level * 5) * streak;
         setScore((s) => s + points);
         setStreak((st) => st + 1);
         onAddScore('arrow', points, streak, seconds);
@@ -140,8 +140,8 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
 
   return (
     <GameWrapper
-      title="Arrow Treasure Hunt"
-      subtitle={`Level ${level} of 100 // Vector Navigation`}
+      title="Arrow Quest"
+      subtitle={`Level ${level} of 100 // Vector Trajectory`}
       icon="🧭"
       score={score}
       streak={streak}
@@ -153,45 +153,51 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
       hintDisabled={isMemorizing || isUnlocked}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-emerald-500/30 max-w-xl mx-auto shadow-2xl relative text-center">
+      <div className="p-6 md:p-8 rounded-3xl glass-panel cyber-hud border border-emerald-500/40 max-w-xl mx-auto shadow-2xl relative text-center overflow-hidden">
+        {/* Glow orb */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+
         {/* Stage Status with Difficulty */}
-        <div className="flex items-center justify-between text-xs font-mono text-emerald-400 mb-4 uppercase tracking-wider">
-          <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+        <div className="flex items-center justify-between text-xs font-mono text-emerald-400 mb-5 px-1 uppercase tracking-wider">
+          <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
             {diffCfg.label}
           </span>
-          <span>{isMemorizing ? '📡 TRANSMITTING VECTOR DATA...' : 'ENTER VECTOR SEQUENCE'}</span>
+          <span className="font-bold flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${isMemorizing ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+            {isMemorizing ? 'TRANSMITTING BEACON...' : 'INPUT VECTOR PATH'}
+          </span>
         </div>
 
-        {/* Chest Centerpiece */}
-        <div className="py-5 flex flex-col items-center justify-center relative">
+        {/* Chest Centerpiece with holographic lighting */}
+        <div className="py-6 flex flex-col items-center justify-center relative">
           <div
-            className={`w-28 h-28 sm:w-32 sm:h-32 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 shadow-2xl ${
+            className={`w-30 h-30 sm:w-36 sm:h-36 rounded-3xl flex items-center justify-center border-2 transition-all duration-500 shadow-2xl ${
               isUnlocked
-                ? 'bg-amber-500/20 border-amber-400 shadow-amber-500/50 scale-110'
-                : 'bg-black/50 border-emerald-500/40 shadow-emerald-950/50'
+                ? 'bg-amber-500/25 border-amber-400 shadow-amber-500/60 scale-110 ring-4 ring-amber-400/40 animate-pulse'
+                : 'bg-black/60 border-emerald-500/40 shadow-emerald-950/60'
             }`}
           >
             {isUnlocked ? (
               <div className="flex flex-col items-center animate-bounce">
-                <span className="text-5xl">👑</span>
-                <Unlock className="w-6 h-6 text-amber-400 mt-1" />
+                <span className="text-5xl sm:text-6xl drop-shadow-lg">👑</span>
+                <Unlock className="w-6 h-6 text-amber-400 mt-2" />
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <span className="text-5xl">📦</span>
-                <Lock className="w-5 h-5 text-emerald-400 mt-1" />
+                <span className="text-5xl sm:text-6xl drop-shadow-md">📦</span>
+                <Lock className="w-5 h-5 text-emerald-400 mt-2" />
               </div>
             )}
           </div>
-          <p className="text-xs text-slate-400 font-mono mt-3">
+          <p className="text-xs text-slate-300 font-mono mt-3">
             {isUnlocked
               ? `LEVEL ${level} VAULT HARVESTED!`
-              : `Sequence Step: ${userSteps.length} of ${sequence.length}`}
+              : `Vector Progress: ${userSteps.length} / ${sequence.length}`}
           </p>
         </div>
 
         {/* Sequence Indicator Dots */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
           {sequence.map((dir, idx) => {
             const isFlashing = flashIndex === idx;
             const isEntered = idx < userSteps.length;
@@ -200,13 +206,13 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
             return (
               <div
                 key={idx}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm border transition-all duration-200 ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center font-orbitron font-black text-sm sm:text-base border-2 transition-all duration-200 ${
                   isFlashing
-                    ? 'bg-cyan-400 text-black border-white ring-4 ring-cyan-400/50 scale-110 shadow-lg'
+                    ? 'bg-cyan-400 text-black border-white ring-4 ring-cyan-400/60 scale-120 shadow-xl shadow-cyan-400/60 animate-bounce'
                     : isEntered
-                    ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
+                    ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/50'
                     : isActive
-                    ? 'border-emerald-400 bg-white/10 text-emerald-300 ring-2 ring-emerald-400/40 animate-pulse'
+                    ? 'border-emerald-400 bg-white/10 text-emerald-300 ring-3 ring-emerald-400/40 animate-pulse'
                     : 'bg-white/5 border-white/10 text-slate-500'
                 }`}
               >
@@ -220,63 +226,82 @@ export default function ArrowTreasureGame({ onExit, onAddScore, initialLevel = 1
           })}
         </div>
 
-        {/* Directional D-Pad Controls */}
-        <div className="flex flex-col items-center gap-2 mb-4">
+        {/* Directional Pad Controls with tactile neon press */}
+        <div className="flex flex-col items-center justify-center gap-2.5 mb-6">
           <button
             onClick={() => handleInput('UP')}
             disabled={isMemorizing || isUnlocked}
-            className="w-16 h-14 rounded-2xl bg-white/10 hover:bg-cyan-500/20 border border-white/20 hover:border-cyan-400 text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md"
+            className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-150 active:scale-90 cursor-pointer ${
+              activePressedDir === 'UP'
+                ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60 scale-105'
+                : 'bg-white/10 hover:bg-emerald-500/25 border-white/20 hover:border-emerald-400 text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg'
+            }`}
           >
-            <ArrowUp className="w-6 h-6 text-cyan-400" />
+            <ArrowUp className="w-6 h-6 text-emerald-400" />
           </button>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => handleInput('LEFT')}
               disabled={isMemorizing || isUnlocked}
-              className="w-16 h-14 rounded-2xl bg-white/10 hover:bg-purple-500/20 border border-white/20 hover:border-purple-400 text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md"
+              className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-150 active:scale-90 cursor-pointer ${
+                activePressedDir === 'LEFT'
+                  ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60 scale-105'
+                  : 'bg-white/10 hover:bg-emerald-500/25 border-white/20 hover:border-emerald-400 text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg'
+              }`}
             >
-              <ArrowLeft className="w-6 h-6 text-purple-400" />
+              <ArrowLeft className="w-6 h-6 text-emerald-400" />
             </button>
-            <button
-              onClick={() => handleInput('DOWN')}
-              disabled={isMemorizing || isUnlocked}
-              className="w-16 h-14 rounded-2xl bg-white/10 hover:bg-amber-500/20 border border-white/20 hover:border-amber-400 text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md"
-            >
-              <ArrowDown className="w-6 h-6 text-amber-400" />
-            </button>
+            <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-slate-500 text-xs font-mono">
+              PAD
+            </div>
             <button
               onClick={() => handleInput('RIGHT')}
               disabled={isMemorizing || isUnlocked}
-              className="w-16 h-14 rounded-2xl bg-white/10 hover:bg-emerald-500/20 border border-white/20 hover:border-emerald-400 text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed shadow-md"
+              className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-150 active:scale-90 cursor-pointer ${
+                activePressedDir === 'RIGHT'
+                  ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60 scale-105'
+                  : 'bg-white/10 hover:bg-emerald-500/25 border-white/20 hover:border-emerald-400 text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg'
+              }`}
             >
               <ArrowRight className="w-6 h-6 text-emerald-400" />
             </button>
           </div>
+          <button
+            onClick={() => handleInput('DOWN')}
+            disabled={isMemorizing || isUnlocked}
+            className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all duration-150 active:scale-90 cursor-pointer ${
+              activePressedDir === 'DOWN'
+                ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60 scale-105'
+                : 'bg-white/10 hover:bg-emerald-500/25 border-white/20 hover:border-emerald-400 text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-lg'
+            }`}
+          >
+            <ArrowDown className="w-6 h-6 text-emerald-400" />
+          </button>
         </div>
 
-        {/* Victory Level Advance */}
+        {/* Victory Level Clear Banner */}
         {isUnlocked && (
-          <div className="p-4 rounded-2xl bg-amber-950/80 border border-amber-500/80 mt-4 animate-fade-in flex flex-col items-center">
-            <div className="flex items-center gap-2 text-amber-300 font-orbitron font-bold text-base">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <span>LEVEL {level} HARVESTED! [{diffCfg.label}]</span>
+          <div className="p-6 rounded-3xl bg-emerald-950/90 border-2 border-emerald-400 mt-6 animate-pop-scale flex flex-col items-center shadow-2xl shadow-emerald-950/60">
+            <div className="flex items-center gap-2 text-emerald-300 font-orbitron font-extrabold text-xl">
+              <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+              <span>VAULT {level} DECRYPTED! [{diffCfg.label}]</span>
             </div>
-            <p className="text-xs text-amber-200 mt-1 mb-3">
-              Sector {level} completed in {formatTime(seconds)}. +{80 * streak + level * 5} IQ Points!
+            <p className="text-xs sm:text-sm text-emerald-200 mt-1.5 mb-5 font-space">
+              Solved in {formatTime(seconds)}! +{50 + sequence.length * 10 + level * 5} Vector Points!
             </p>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic px-5 py-2.5 rounded-xl text-xs font-orbitron font-bold"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-orbitron font-bold cursor-pointer"
               >
-                {level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}
+                <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
+                <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={onExit}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
-                Return to Cube
+                Return to Hub
               </button>
             </div>
           </div>

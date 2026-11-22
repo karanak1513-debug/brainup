@@ -19,14 +19,14 @@ const ISOTOPES = {
   2: { label: 'H¹', name: 'Hydrogen', bg: 'bg-cyan-500/20', border: 'border-cyan-400', text: 'text-cyan-300' },
   4: { label: 'He²', name: 'Helium', bg: 'bg-sky-500/25', border: 'border-sky-400', text: 'text-sky-300' },
   8: { label: 'Li³', name: 'Lithium', bg: 'bg-blue-500/30', border: 'border-blue-400', text: 'text-blue-300' },
-  16: { label: 'C⁶', name: 'Carbon', bg: 'bg-indigo-500/30', border: 'border-indigo-400', text: 'text-indigo-300' },
-  32: { label: 'O⁸', name: 'Oxygen', bg: 'bg-purple-500/35', border: 'border-purple-400', text: 'text-purple-300' },
-  64: { label: 'Ne¹⁰', name: 'Neon', bg: 'bg-fuchsia-500/40', border: 'border-fuchsia-400', text: 'text-fuchsia-300' },
-  128: { label: 'Si¹⁴', name: 'Silicon', bg: 'bg-pink-500/45', border: 'border-pink-400', text: 'text-pink-300' },
-  256: { label: 'Fe²⁶', name: 'Iron', bg: 'bg-rose-500/50', border: 'border-rose-400', text: 'text-rose-300' },
-  512: { label: 'Au⁷⁹', name: 'Gold', bg: 'bg-amber-500/50', border: 'border-amber-400', text: 'text-amber-300' },
+  16: { label: 'C⁶', name: 'Carbon', bg: 'bg-indigo-500/35', border: 'border-indigo-400', text: 'text-indigo-300' },
+  32: { label: 'O⁸', name: 'Oxygen', bg: 'bg-purple-500/40', border: 'border-purple-400', text: 'text-purple-300' },
+  64: { label: 'Ne¹⁰', name: 'Neon', bg: 'bg-fuchsia-500/45', border: 'border-fuchsia-400', text: 'text-fuchsia-300' },
+  128: { label: 'Si¹⁴', name: 'Silicon', bg: 'bg-pink-500/50', border: 'border-pink-400', text: 'text-pink-300' },
+  256: { label: 'Fe²⁶', name: 'Iron', bg: 'bg-rose-500/55', border: 'border-rose-400', text: 'text-rose-300' },
+  512: { label: 'Au⁷⁹', name: 'Gold', bg: 'bg-amber-500/55', border: 'border-amber-400', text: 'text-amber-300' },
   1024: { label: 'U⁹²', name: 'Uranium', bg: 'bg-emerald-500/60', border: 'border-emerald-400', text: 'text-emerald-300' },
-  2048: { label: 'Ω', name: 'Singularity', bg: 'bg-gradient-to-r from-cyan-500 to-purple-500', border: 'border-white', text: 'text-white' }
+  2048: { label: 'Ω', name: 'Singularity', bg: 'bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500', border: 'border-white', text: 'text-white' }
 };
 
 export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 1 }) {
@@ -44,6 +44,7 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
   const [isLevelCleared, setIsLevelCleared] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [hintText, setHintText] = useState(null);
+  const [activeDirection, setActiveDirection] = useState(null);
 
   const difficulty = getLevelDifficulty(level);
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
@@ -155,6 +156,9 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
     (direction) => {
       if (isLevelCleared || isGameOver) return;
 
+      setActiveDirection(direction);
+      setTimeout(() => setActiveDirection(null), 150);
+
       let current = board;
       let rotCount = 0;
 
@@ -199,7 +203,7 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
         if (maxVal >= targetTile && !isLevelCleared) {
           setIsLevelCleared(true);
           sounds.playVictory();
-          confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+          confetti({ particleCount: 110, spread: 85, origin: { y: 0.6 } });
         }
       }
 
@@ -234,7 +238,7 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
     onAddScore('reactor', -10, streak, seconds);
     setScore((s) => Math.max(0, s - 10));
     setHintText(
-      `Quantum Strategy: Keep your highest element locked into a corner (e.g. bottom-right) and avoid moving opposite!`
+      `Quantum Strategy: Anchor your highest element in a corner (e.g. bottom-right) and avoid moving opposite!`
     );
   };
 
@@ -253,39 +257,42 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
       hintDisabled={isLevelCleared}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-cyan-500/30 max-w-lg mx-auto shadow-2xl relative text-center">
+      <div className="p-6 md:p-8 rounded-3xl glass-panel cyber-hud border border-cyan-500/40 max-w-lg mx-auto shadow-2xl relative text-center overflow-hidden">
+        {/* Glow ambient */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header Info */}
         <div className="flex items-center justify-between mb-4 px-2 text-xs font-mono">
-          <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+          <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
             {diffCfg.label}
           </span>
-          <span className="text-cyan-400 font-bold">
+          <span className="text-cyan-300 font-bold">
             TARGET: {ISOTOPES[targetTile]?.label || targetTile} ({targetTile})
           </span>
-          <span className="text-slate-400">
-            HIGHEST: {ISOTOPES[highestTile]?.label || highestTile}
+          <span className="text-slate-300 font-mono">
+            PEAK: <strong className="text-amber-400">{ISOTOPES[highestTile]?.label || highestTile}</strong>
           </span>
         </div>
 
-        {/* 4x4 Grid Field */}
-        <div className="p-3.5 bg-black/70 rounded-3xl border-2 border-cyan-500/40 shadow-2xl mx-auto w-full max-w-sm mb-6">
-          <div className="grid grid-cols-4 gap-2">
+        {/* 4x4 Grid Containment Field */}
+        <div className="p-4 bg-black/80 rounded-3xl border-2 border-cyan-500/50 shadow-2xl mx-auto w-full max-w-sm mb-6 shadow-cyan-950/60">
+          <div className="grid grid-cols-4 gap-2.5">
             {board.map((row, r) =>
               row.map((val, c) => {
                 const iso = ISOTOPES[val] || ISOTOPES[2048];
                 return (
                   <div
                     key={`${r}-${c}`}
-                    className={`h-16 sm:h-20 rounded-2xl flex flex-col items-center justify-center font-orbitron transition-all duration-150 ${
+                    className={`h-16 sm:h-20 rounded-2xl flex flex-col items-center justify-center font-orbitron transition-all duration-200 ${
                       val === 0
                         ? 'bg-white/5 border border-white/10'
-                        : `${iso.bg} border ${iso.border} ${iso.text} shadow-lg scale-100`
+                        : `${iso.bg} border-2 ${iso.border} ${iso.text} shadow-xl scale-102 animate-pop-scale`
                     }`}
                   >
                     {val !== 0 && (
                       <>
-                        <span className="text-lg sm:text-2xl font-black">{iso.label}</span>
-                        <span className="text-[9px] font-mono opacity-70 uppercase tracking-tighter">
+                        <span className="text-xl sm:text-2xl font-black drop-shadow-md">{iso.label}</span>
+                        <span className="text-[9px] font-mono opacity-80 uppercase tracking-tighter">
                           {val}
                         </span>
                       </>
@@ -297,33 +304,48 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
           </div>
         </div>
 
-        {/* D-Pad Directional Controls for Mobile / Touch */}
-        <div className="flex flex-col items-center justify-center gap-2 mb-6">
+        {/* D-Pad Directional Controls with tactile glowing feedback */}
+        <div className="flex flex-col items-center justify-center gap-2.5 mb-6">
           <button
             onClick={() => handleMove('UP')}
-            className="p-3 rounded-2xl bg-white/10 hover:bg-cyan-500/25 border border-white/20 active:scale-90 text-white"
+            className={`p-3.5 rounded-2xl border-2 transition-all active:scale-90 cursor-pointer ${
+              activeDirection === 'UP'
+                ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60'
+                : 'bg-white/10 hover:bg-cyan-500/25 border-white/20 text-white shadow-lg'
+            }`}
             title="Slide Up"
           >
             <ArrowUp className="w-5 h-5 text-cyan-400" />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => handleMove('LEFT')}
-              className="p-3 rounded-2xl bg-white/10 hover:bg-cyan-500/25 border border-white/20 active:scale-90 text-white"
+              className={`p-3.5 rounded-2xl border-2 transition-all active:scale-90 cursor-pointer ${
+                activeDirection === 'LEFT'
+                  ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60'
+                  : 'bg-white/10 hover:bg-cyan-500/25 border-white/20 text-white shadow-lg'
+              }`}
               title="Slide Left"
             >
               <ArrowLeft className="w-5 h-5 text-cyan-400" />
             </button>
             <button
-              onClick={initBoard}
-              className="p-3 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 active:scale-90 text-slate-400 hover:text-white"
-              title="Reset Board"
+              onClick={() => {
+                sounds.playClick();
+                initBoard();
+              }}
+              className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 active:scale-90 text-slate-400 hover:text-white cursor-pointer"
+              title="Reset Containment Field"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleMove('RIGHT')}
-              className="p-3 rounded-2xl bg-white/10 hover:bg-cyan-500/25 border border-white/20 active:scale-90 text-white"
+              className={`p-3.5 rounded-2xl border-2 transition-all active:scale-90 cursor-pointer ${
+                activeDirection === 'RIGHT'
+                  ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60'
+                  : 'bg-white/10 hover:bg-cyan-500/25 border-white/20 text-white shadow-lg'
+              }`}
               title="Slide Right"
             >
               <ArrowRight className="w-5 h-5 text-cyan-400" />
@@ -331,7 +353,11 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
           </div>
           <button
             onClick={() => handleMove('DOWN')}
-            className="p-3 rounded-2xl bg-white/10 hover:bg-cyan-500/25 border border-white/20 active:scale-90 text-white"
+            className={`p-3.5 rounded-2xl border-2 transition-all active:scale-90 cursor-pointer ${
+              activeDirection === 'DOWN'
+                ? 'bg-cyan-400 border-white text-black ring-4 ring-cyan-400/60'
+                : 'bg-white/10 hover:bg-cyan-500/25 border-white/20 text-white shadow-lg'
+            }`}
             title="Slide Down"
           >
             <ArrowDown className="w-5 h-5 text-cyan-400" />
@@ -340,25 +366,25 @@ export default function QuantumReactorGame({ onExit, onAddScore, initialLevel = 
 
         {/* Victory Level Clear Banner */}
         {isLevelCleared && (
-          <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-center animate-fade-in w-full">
-            <div className="flex items-center justify-center gap-2 text-emerald-400 font-orbitron font-bold text-lg">
-              <CheckCircle2 className="w-5 h-5" />
+          <div className="p-6 rounded-3xl bg-emerald-950/90 border-2 border-emerald-400 text-center animate-pop-scale w-full shadow-2xl shadow-emerald-950/60">
+            <div className="flex items-center justify-center gap-2 text-emerald-300 font-orbitron font-extrabold text-xl">
+              <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               <span>REACTOR TARGET {targetTile} SYNTHESIZED!</span>
             </div>
-            <p className="text-xs text-emerald-200 mt-1">
+            <p className="text-xs sm:text-sm text-emerald-200 mt-1.5 mb-5 font-space">
               Harmonized in {formatTime(seconds)}! +{score} Reactor Points!
             </p>
-            <div className="flex items-center justify-center gap-3 mt-3">
+            <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-xs font-bold font-orbitron tracking-wider transition-all"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl text-white text-xs font-bold font-orbitron tracking-wider cursor-pointer"
               >
                 <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
                 <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={onExit}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
                 Return to Hub
               </button>

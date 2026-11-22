@@ -5,45 +5,37 @@ import { sounds } from '../../utils/soundFX';
 import { getLevelDifficulty, DIFFICULTY_CONFIG } from '../../utils/levels';
 import { Compass, RotateCw, CheckCircle2, XCircle, ArrowRight, Sparkles } from 'lucide-react';
 
-// Shape templates on 3x3 grid (represented as 0 or 1)
 const SHAPE_TEMPLATES = [
-  // L-shape
   [
     [1, 0, 0],
     [1, 0, 0],
     [1, 1, 0]
   ],
-  // T-shape
   [
     [1, 1, 1],
     [0, 1, 0],
     [0, 1, 0]
   ],
-  // F-shape
   [
     [1, 1, 1],
     [1, 0, 0],
     [1, 1, 0]
   ],
-  // Z-shape
   [
     [1, 1, 0],
     [0, 1, 1],
     [0, 0, 0]
   ],
-  // Plus
   [
     [0, 1, 0],
     [1, 1, 1],
     [0, 1, 0]
   ],
-  // Corner hook
   [
     [1, 1, 0],
     [1, 0, 0],
     [0, 0, 0]
   ],
-  // U-shape
   [
     [1, 0, 1],
     [1, 0, 1],
@@ -51,7 +43,6 @@ const SHAPE_TEMPLATES = [
   ]
 ];
 
-// Helper to rotate a 3x3 matrix 90 degrees clockwise
 const rotate90 = (grid) => {
   const n = grid.length;
   const res = Array.from({ length: n }, () => Array(n).fill(0));
@@ -63,7 +54,6 @@ const rotate90 = (grid) => {
   return res;
 };
 
-// Helper to mirror (reflect horizontally)
 const mirrorHorizontal = (grid) => {
   return grid.map((row) => [...row].reverse());
 };
@@ -72,7 +62,7 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
   const [level, setLevel] = useState(initialLevel);
   const [targetShape, setTargetShape] = useState([]);
   const [targetAngle, setTargetAngle] = useState(90);
-  const [options, setOptions] = useState([]); // [{ id, grid, isCorrect }]
+  const [options, setOptions] = useState([]);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
@@ -90,14 +80,12 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
     setTargetAngle(chosenAngle);
     setTargetShape(baseShape);
 
-    // Compute true rotated shape
     let trueRotated = baseShape;
     const rotationsCount = chosenAngle / 90;
     for (let i = 0; i < rotationsCount; i++) {
       trueRotated = rotate90(trueRotated);
     }
 
-    // Generate decoys (e.g. mirrored versions, or wrong angle rotations)
     const decoy1 = mirrorHorizontal(trueRotated);
     const decoy2 = rotate90(decoy1);
     const decoy3 = rotate90(rotate90(decoy1));
@@ -139,7 +127,7 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
 
     if (candidate.isCorrect) {
       sounds.playCorrect();
-      confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
+      confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
       const points = (60 + level * 5) * streak;
       setScore((s) => s + points);
       setStreak((st) => st + 1);
@@ -162,19 +150,19 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
 
   const renderGridMini = (grid, isSmall = false, activeColor = '#00F0FF') => {
     return (
-      <div className={`grid grid-cols-3 gap-1 p-2 rounded-xl bg-black/60 border border-white/10 ${isSmall ? 'w-20 h-20' : 'w-28 h-28'}`}>
+      <div className={`grid grid-cols-3 gap-1.5 p-2 rounded-2xl bg-black/80 border border-white/15 ${isSmall ? 'w-22 h-22 sm:w-26 sm:h-26' : 'w-32 h-32 sm:w-36 sm:h-36'} shadow-inner`}>
         {grid.map((row, r) =>
           row.map((val, c) => (
             <div
               key={`${r}-${c}`}
-              className={`rounded-md transition-all ${
+              className={`rounded-lg transition-all duration-300 ${
                 val === 1
-                  ? 'border border-white/30 shadow-sm'
+                  ? 'border border-white/40 shadow-md scale-102'
                   : 'bg-white/5 opacity-20'
               }`}
               style={{
                 backgroundColor: val === 1 ? activeColor : 'transparent',
-                boxShadow: val === 1 ? `0 0 10px ${activeColor}88` : 'none'
+                boxShadow: val === 1 ? `0 0 14px ${activeColor}aa` : 'none'
               }}
             />
           ))
@@ -198,33 +186,36 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
       hintDisabled={isAnswered}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-emerald-500/30 max-w-xl mx-auto shadow-2xl relative text-center">
+      <div className="p-6 md:p-8 rounded-3xl glass-panel cyber-hud border border-emerald-500/40 max-w-xl mx-auto shadow-2xl relative text-center overflow-hidden">
+        {/* Glow ambient */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header Info */}
         <div className="flex items-center justify-between mb-4 px-2 text-xs font-mono">
-          <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+          <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
             {diffCfg.label}
           </span>
-          <span className="text-emerald-400 font-bold flex items-center gap-1">
-            <RotateCw className="w-3.5 h-3.5" />
+          <span className="text-emerald-300 font-bold flex items-center gap-1.5 font-mono">
+            <RotateCw className="w-4 h-4 animate-spin-slow" />
             ROTATE {targetAngle}° CLOCKWISE
           </span>
         </div>
 
         {/* Target Glyph Card */}
-        <div className="p-5 rounded-2xl bg-black/50 border border-emerald-500/30 mb-6 flex flex-col items-center shadow-lg">
-          <span className="text-xs font-mono text-slate-300 uppercase tracking-widest mb-3">
+        <div className="p-6 rounded-3xl bg-black/60 border-2 border-emerald-500/40 mb-6 flex flex-col items-center shadow-2xl">
+          <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-3 font-bold">
             TARGET QUANTUM GLYPH (BASE ORIENTATION)
           </span>
           {targetShape.length > 0 && renderGridMini(targetShape, false, '#10B981')}
         </div>
 
         {/* Question Prompt */}
-        <p className="text-xs sm:text-sm text-slate-300 font-space mb-5">
-          Select the correct glyph after rotating the base orientation <strong className="text-emerald-400">{targetAngle}° clockwise</strong>. Decoys are mirrored or mutated:
+        <p className="text-xs sm:text-sm text-slate-200 font-space mb-5">
+          Select the correct glyph after mentally rotating the base orientation <strong className="text-emerald-300">{targetAngle}° clockwise</strong>. Decoys are mirrored:
         </p>
 
         {/* 4 Candidate Options */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-3.5 mb-6">
           {options.map((cand, idx) => {
             const isChosen = selectedOptionId === cand.id;
             const isRight = isAnswered && cand.isCorrect;
@@ -235,17 +226,17 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
                 key={idx}
                 onClick={() => handleSelectOption(cand)}
                 disabled={isAnswered}
-                className={`p-3.5 rounded-2xl border flex flex-col items-center justify-center transition-all duration-200 active:scale-95 ${
+                className={`p-4 rounded-3xl border-2 flex flex-col items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer ${
                   isRight
-                    ? 'bg-emerald-950/80 border-emerald-400 ring-2 ring-emerald-400 shadow-lg shadow-emerald-950/60'
+                    ? 'bg-emerald-950/90 border-emerald-400 ring-4 ring-emerald-400/50 shadow-2xl shadow-emerald-950/60 scale-103'
                     : isWrong
-                    ? 'bg-red-950/80 border-red-500 ring-2 ring-red-400'
-                    : 'bg-white/5 hover:bg-white/10 border-white/15 hover:border-emerald-400'
+                    ? 'bg-red-950/90 border-red-500 ring-4 ring-red-400/50 shadow-xl shadow-red-950/60 animate-shake'
+                    : 'bg-white/10 hover:bg-white/20 border-white/20 hover:border-emerald-400 shadow-lg hover:scale-102'
                 }`}
               >
                 {renderGridMini(cand.grid, true, isRight ? '#34D399' : isWrong ? '#F87171' : '#00F0FF')}
-                <div className="flex items-center gap-1.5 mt-2 text-xs font-mono font-bold">
-                  <span>CHOICE {idx + 1}</span>
+                <div className="flex items-center gap-1.5 mt-2.5 text-xs font-mono font-bold">
+                  <span className="text-slate-200">GLYPH {idx + 1}</span>
                   {isRight && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
                   {isWrong && <XCircle className="w-4 h-4 text-red-400" />}
                 </div>
@@ -254,10 +245,10 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
           })}
         </div>
 
-        {/* Level Complete / Next Level */}
+        {/* Level Complete Banner */}
         {isAnswered && (
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center animate-fade-in">
-            <p className="text-xs sm:text-sm text-slate-200 mb-3">
+          <div className="p-5 rounded-3xl bg-emerald-950/90 border-2 border-emerald-400 text-center animate-pop-scale shadow-2xl shadow-emerald-950/60">
+            <p className="text-xs sm:text-sm text-emerald-200 mb-4 font-space">
               {selectedOptionId === 'correct'
                 ? `Excellent spatial rotation! Mental orientation harmonized.`
                 : `Spatial disorientation detected. Study the clockwise transformation.`}
@@ -265,14 +256,14 @@ export default function SpatialRotationGame({ onExit, onAddScore, initialLevel =
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl font-orbitron font-bold text-xs cursor-pointer shadow-lg"
               >
                 <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
                 <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={onExit}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
                 Return to Hub
               </button>

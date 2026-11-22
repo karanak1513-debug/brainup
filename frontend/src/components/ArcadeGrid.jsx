@@ -9,7 +9,8 @@ import {
   Flame,
   Brain,
   Layers,
-  Clock
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { sounds } from '../utils/soundFX';
 
@@ -21,7 +22,7 @@ export const ALL_GAMES = [
     tag: 'Matrix Logic',
     category: 'LOGIC',
     color: '#00F0FF',
-    glow: 'hover:border-cyan-400 hover:shadow-cyan-500/30',
+    glow: 'hover:border-cyan-400 hover:shadow-cyan-500/40',
     desc: 'Conflict-free 4x4 quantum matrix deduction. Quadrant & axis calibration.',
     levels: 100
   },
@@ -32,7 +33,7 @@ export const ALL_GAMES = [
     tag: 'Lateral Paradox',
     category: 'LOGIC',
     color: '#EC4899',
-    glow: 'hover:border-pink-400 hover:shadow-pink-500/30',
+    glow: 'hover:border-pink-400 hover:shadow-pink-500/40',
     desc: 'Spacetime paradoxes, general relativity, quantum phenomena, astrophysics.',
     levels: 100
   },
@@ -43,7 +44,7 @@ export const ALL_GAMES = [
     tag: 'Cognitive Deduction',
     category: 'LOGIC',
     color: '#8B5CF6',
-    glow: 'hover:border-purple-400 hover:shadow-purple-500/30',
+    glow: 'hover:border-purple-400 hover:shadow-purple-500/40',
     desc: 'Detect missing sequence values across exponential and quantum progressions.',
     levels: 100
   },
@@ -54,7 +55,7 @@ export const ALL_GAMES = [
     tag: '60s Arithmetic',
     category: 'SPEED',
     color: '#F59E0B',
-    glow: 'hover:border-amber-400 hover:shadow-amber-500/30',
+    glow: 'hover:border-amber-400 hover:shadow-amber-500/40',
     desc: '60-second high-speed arithmetic sprint with combo multipliers.',
     levels: 100
   },
@@ -65,7 +66,7 @@ export const ALL_GAMES = [
     tag: 'Spatial Vectors',
     category: 'SPATIAL',
     color: '#10B981',
-    glow: 'hover:border-emerald-400 hover:shadow-emerald-500/30',
+    glow: 'hover:border-emerald-400 hover:shadow-emerald-500/40',
     desc: 'Memorize rapid multi-directional trajectory chains and unlock quantum vaults.',
     levels: 100
   },
@@ -76,7 +77,7 @@ export const ALL_GAMES = [
     tag: 'Entanglement Recall',
     category: 'MEMORY',
     color: '#3B82F6',
-    glow: 'hover:border-blue-400 hover:shadow-blue-500/30',
+    glow: 'hover:border-blue-400 hover:shadow-blue-500/40',
     desc: 'Recall and align entangled cosmic particle cards before thermal decay.',
     levels: 100
   },
@@ -87,7 +88,7 @@ export const ALL_GAMES = [
     tag: 'Stroop Inhibition',
     category: 'SPEED',
     color: '#00F0FF',
-    glow: 'hover:border-cyan-400 hover:shadow-cyan-500/30',
+    glow: 'hover:border-cyan-400 hover:shadow-cyan-500/40',
     desc: 'Master cognitive interference: choose ink colors vs word spellings under time pressure.',
     levels: 100
   },
@@ -98,7 +99,7 @@ export const ALL_GAMES = [
     tag: 'Quantum Anagrams',
     category: 'MEMORY',
     color: '#C084FC',
-    glow: 'hover:border-purple-400 hover:shadow-purple-500/30',
+    glow: 'hover:border-purple-400 hover:shadow-purple-500/40',
     desc: 'Unscramble deep astrophysical and cosmological vocabulary into quantum slots.',
     levels: 100
   },
@@ -109,7 +110,7 @@ export const ALL_GAMES = [
     tag: '3D Mental Rotation',
     category: 'SPATIAL',
     color: '#10B981',
-    glow: 'hover:border-emerald-400 hover:shadow-emerald-500/30',
+    glow: 'hover:border-emerald-400 hover:shadow-emerald-500/40',
     desc: 'Rotate complex 3D quantum glyphs in your mind and distinguish true rotations from mirror decoys.',
     levels: 100
   },
@@ -120,7 +121,7 @@ export const ALL_GAMES = [
     tag: '2048 Fusion',
     category: 'LOGIC',
     color: '#F43F5E',
-    glow: 'hover:border-rose-400 hover:shadow-rose-500/30',
+    glow: 'hover:border-rose-400 hover:shadow-rose-500/40',
     desc: 'Slide & synthesize atomic isotopes into Hydrogen, Helium, Iron, Uranium, and the Singularity.',
     levels: 100
   }
@@ -137,8 +138,8 @@ export default function ArcadeGrid({ onSelectGame, userProfile }) {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 animate-fade-in">
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+      {/* Category Filter Pills Bar */}
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-6 p-1.5 rounded-3xl bg-black/60 border border-white/10 backdrop-blur-md shadow-xl w-fit mx-auto">
         {[
           { id: 'ALL', label: 'All 10 Arenas' },
           { id: 'LOGIC', label: 'Logic & Deductive' },
@@ -152,10 +153,10 @@ export default function ArcadeGrid({ onSelectGame, userProfile }) {
               sounds.playClick();
               setFilter(tab.id);
             }}
-            className={`px-4 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
+            className={`px-4 py-2 rounded-2xl text-xs font-mono font-bold transition-all cursor-pointer ${
               filter === tab.id
-                ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/40 scale-105'
-                : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10'
+                ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/50 scale-105'
+                : 'text-slate-400 hover:text-white hover:bg-white/10'
             }`}
           >
             {tab.label}
@@ -164,7 +165,7 @@ export default function ArcadeGrid({ onSelectGame, userProfile }) {
       </div>
 
       {/* Grid of Games */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {filteredGames.map((game) => {
           const gameStat = stats[game.id] || { played: 0, won: 0, score: 0 };
           return (
@@ -174,23 +175,23 @@ export default function ArcadeGrid({ onSelectGame, userProfile }) {
                 sounds.playClick();
                 onSelectGame(game.id);
               }}
-              className={`p-5 rounded-3xl glass-card text-left border transition-all duration-300 hover:-translate-y-1.5 cursor-pointer relative overflow-hidden group shadow-xl ${game.glow}`}
+              className={`p-6 rounded-3xl glass-card cyber-hud text-left border transition-all duration-300 hover:-translate-y-2 cursor-pointer relative overflow-hidden group shadow-2xl ${game.glow}`}
             >
               <div
-                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-15 pointer-events-none transition-opacity group-hover:opacity-30"
+                className="absolute top-0 right-0 w-36 h-36 rounded-full blur-3xl opacity-15 pointer-events-none transition-opacity group-hover:opacity-35"
                 style={{ backgroundColor: game.color }}
               />
 
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-4xl p-2.5 rounded-2xl bg-white/5 border border-white/10 group-hover:scale-110 transition-transform">
+              <div className="flex items-center justify-between mb-3.5">
+                <span className="text-4xl p-3 rounded-2xl bg-white/5 border border-white/10 group-hover:scale-115 transition-transform duration-300 shadow-inner">
                   {game.icon}
                 </span>
                 <div className="flex flex-col items-end gap-1">
                   <span
-                    className="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider border"
+                    className="px-3 py-0.5 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider border shadow-sm"
                     style={{
                       color: game.color,
-                      borderColor: `${game.color}55`,
+                      borderColor: `${game.color}66`,
                       backgroundColor: `${game.color}15`
                     }}
                   >
@@ -216,8 +217,8 @@ export default function ArcadeGrid({ onSelectGame, userProfile }) {
                   <span>•</span>
                   <span>Score: <strong className="text-amber-400">{gameStat.score}</strong></span>
                 </div>
-                <span className="text-cyan-400 font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                  Play <ArrowRight className="w-3.5 h-3.5" />
+                <span className="text-cyan-400 font-bold group-hover:translate-x-1.5 transition-transform flex items-center gap-1">
+                  Launch <ArrowRight className="w-4 h-4" />
                 </span>
               </div>
             </div>

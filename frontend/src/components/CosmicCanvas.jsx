@@ -167,9 +167,16 @@ export default function CosmicCanvas({ dimension = 'cosmos-violet', isWarping = 
 
       // Handle Hyperspace / Warp Speed
       const isWarp = stateRef.current.isWarping;
-      stateRef.current.targetSpeed = isWarp ? 22 : 0.4;
+      stateRef.current.targetSpeed = isWarp ? 26 : 0.45;
       stateRef.current.currentSpeed += (stateRef.current.targetSpeed - stateRef.current.currentSpeed) * 0.08;
       const speed = stateRef.current.currentSpeed;
+
+      // Dynamic cinematic camera FOV stretch during hyperspace warp
+      const targetFov = isWarp ? 85 : 60;
+      if (Math.abs(camera.fov - targetFov) > 0.1) {
+        camera.fov += (targetFov - camera.fov) * 0.08;
+        camera.updateProjectionMatrix();
+      }
 
       const positions = starGeometry.attributes.position.array;
       for (let i = 0; i < starCount; i++) {

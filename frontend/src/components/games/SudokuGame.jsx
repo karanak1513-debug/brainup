@@ -3,7 +3,7 @@ import GameWrapper from '../GameWrapper';
 import confetti from 'canvas-confetti';
 import { sounds } from '../../utils/soundFX';
 import { getLevelDifficulty, DIFFICULTY_CONFIG } from '../../utils/levels';
-import { CheckCircle2, RotateCcw, ArrowRight } from 'lucide-react';
+import { CheckCircle2, RotateCcw, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
   const [level, setLevel] = useState(initialLevel);
@@ -17,6 +17,7 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
   const [hintText, setHintText] = useState(null);
   const [gameWon, setGameWon] = useState(false);
   const [streak, setStreak] = useState(1);
+  const [isShaking, setIsShaking] = useState(false);
 
   const difficulty = getLevelDifficulty(level);
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
@@ -117,6 +118,8 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
     if (!isCorrect) {
       setMistakes((m) => m + 1);
       sounds.playError();
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
     } else {
       checkVictory(newGrid);
     }
@@ -125,6 +128,7 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
   const handleClearCell = () => {
     const [r, c] = selectedCell;
     if (initialGrid[r] && initialGrid[r][c] !== 0) return;
+    sounds.playClick();
     const newGrid = JSON.parse(JSON.stringify(currentGrid));
     newGrid[r][c] = 0;
     setCurrentGrid(newGrid);
@@ -145,8 +149,8 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
       setGameWon(true);
       sounds.playVictory();
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 110,
+        spread: 80,
         origin: { y: 0.6 }
       });
       const pointsWon = Math.max(60, 150 + level * 10 - mistakes * 15);
@@ -189,27 +193,36 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
       hintDisabled={gameWon}
       hintText={hintText}
     >
-      <div className="flex flex-col items-center justify-center p-6 rounded-3xl glass-panel border border-cyan-500/30 max-w-xl mx-auto shadow-2xl">
+      <div className="flex flex-col items-center justify-center p-6 md:p-8 rounded-3xl glass-panel cyber-hud border border-cyan-500/40 max-w-xl mx-auto shadow-2xl relative overflow-hidden">
+        {/* Ambient subtle glow */}
+        <div className="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+
         {/* Status banner with Difficulty Badge */}
-        <div className="w-full flex items-center justify-between mb-4 px-2 text-xs font-mono text-slate-300">
+        <div className="w-full flex items-center justify-between mb-5 px-1 text-xs font-mono text-slate-300">
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+            <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
               {diffCfg.label}
             </span>
-            <span className="text-red-400 font-bold">Errors: {mistakes}</span>
+            <span className={`font-bold flex items-center gap-1 ${mistakes > 0 ? 'text-red-400' : 'text-slate-400'}`}>
+              <AlertCircle className="w-3.5 h-3.5" />
+              Errors: {mistakes}
+            </span>
           </div>
           <button
-            onClick={() => fetchPuzzle(level)}
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            onClick={() => {
+              sounds.playClick();
+              fetchPuzzle(level);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-all cursor-pointer border border-white/10 active:scale-95"
           >
             <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
             <span>Reset Grid</span>
           </button>
         </div>
 
-        {/* Sudoku Grid */}
-        <div className="p-3 bg-black/60 rounded-2xl border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/40">
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+        {/* Sudoku 4x4 Grid Container */}
+        <div className={`p-4 bg-black/75 rounded-3xl border-2 border-cyan-500/60 shadow-2xl shadow-cyan-950/60 transition-transform ${isShaking ? 'animate-shake' : ''}`}>
+          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
             {currentGrid.map((row, r) =>
               row.map((val, c) => {
                 const isInitial = initialGrid[r] && initialGrid[r][c] !== 0;
@@ -217,8 +230,8 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
                 const isCorrect = val === 0 || (solution[r] && solution[r][c] === val);
                 const isError = val !== 0 && !isCorrect;
 
-                const borderR = (c + 1) % 2 === 0 && c < 3 ? 'border-r-2 border-r-cyan-400/60' : '';
-                const borderB = (r + 1) % 2 === 0 && r < 3 ? 'border-b-2 border-b-cyan-400/60' : '';
+                const borderR = (c + 1) % 2 === 0 && c < 3 ? 'border-r-2 border-r-cyan-400/70' : '';
+                const borderB = (r + 1) % 2 === 0 && r < 3 ? 'border-b-2 border-b-cyan-400/70' : '';
 
                 return (
                   <button
@@ -227,16 +240,16 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
                       sounds.playClick();
                       setSelectedCell([r, c]);
                     }}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-xl sm:text-2xl font-bold font-orbitron rounded-xl transition-all duration-150 ${borderR} ${borderB} ${
+                    className={`w-14 h-14 sm:w-18 sm:h-18 flex items-center justify-center text-2xl sm:text-3xl font-black font-orbitron rounded-2xl transition-all duration-200 cursor-pointer ${borderR} ${borderB} ${
                       isSelected
-                        ? 'ring-2 ring-cyan-400 bg-cyan-950/70 text-cyan-200 scale-105 z-10'
+                        ? 'ring-3 ring-cyan-400 bg-cyan-950/80 text-cyan-200 scale-108 z-10 shadow-lg shadow-cyan-500/50'
                         : isInitial
-                        ? 'bg-white/10 text-white font-extrabold cursor-default'
+                        ? 'bg-white/15 text-white font-black cursor-default shadow-sm'
                         : isError
-                        ? 'bg-red-950/60 text-red-400 border border-red-500'
+                        ? 'bg-red-950/80 text-red-300 border-2 border-red-500 shadow-md shadow-red-950/50 animate-shake'
                         : val !== 0
-                        ? 'bg-emerald-950/50 text-emerald-300 border border-emerald-500/60'
-                        : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                        ? 'bg-emerald-950/60 text-emerald-300 border-2 border-emerald-500/70 shadow-md shadow-emerald-950/50'
+                        : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:border-cyan-400/50 border border-transparent'
                     }`}
                   >
                     {val !== 0 ? val : ''}
@@ -247,20 +260,20 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
           </div>
         </div>
 
-        {/* Input Dial (1, 2, 3, 4 + Clear) */}
-        <div className="flex items-center gap-2.5 mt-6">
+        {/* Input Dial Keypad (1, 2, 3, 4 + Clear) */}
+        <div className="flex items-center gap-3 mt-7">
           {[1, 2, 3, 4].map((num) => (
             <button
               key={num}
               onClick={() => handleNumberInput(num)}
-              className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-cyan-500/20 border border-cyan-400/40 text-white font-orbitron font-bold text-lg transition-all duration-150 active:scale-90 hover:border-cyan-400 shadow-md shadow-cyan-950/50"
+              className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-white/10 hover:bg-cyan-500/25 border-2 border-cyan-400/40 text-white font-orbitron font-black text-xl sm:text-2xl transition-all duration-200 active:scale-90 hover:border-cyan-400 shadow-xl shadow-cyan-950/50 cursor-pointer hover:scale-105"
             >
               {num}
             </button>
           ))}
           <button
             onClick={handleClearCell}
-            className="px-3.5 h-12 rounded-2xl bg-red-950/40 hover:bg-red-950/70 border border-red-500/40 text-red-300 text-xs font-mono font-bold transition-all duration-150 active:scale-90"
+            className="px-4 h-13 sm:h-15 rounded-2xl bg-red-950/50 hover:bg-red-950/80 border-2 border-red-500/50 text-red-200 text-xs font-mono font-bold transition-all duration-200 active:scale-90 cursor-pointer hover:border-red-400 shadow-lg"
           >
             Clear
           </button>
@@ -268,27 +281,27 @@ export default function SudokuGame({ onExit, onAddScore, initialLevel = 1 }) {
 
         {/* Victory Level Clear Banner */}
         {gameWon && (
-          <div className="mt-6 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-center animate-fade-in w-full">
-            <div className="flex items-center justify-center gap-2 text-emerald-400 font-orbitron font-bold text-lg">
-              <CheckCircle2 className="w-5 h-5" />
+          <div className="mt-7 p-5 rounded-3xl bg-emerald-950/90 border-2 border-emerald-400 text-center animate-pop-scale w-full shadow-2xl shadow-emerald-950/60">
+            <div className="flex items-center justify-center gap-2 text-emerald-300 font-orbitron font-extrabold text-lg sm:text-xl">
+              <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               <span>LEVEL {level} HARMONIZED! [{diffCfg.label}]</span>
             </div>
-            <p className="text-xs text-emerald-200 mt-1">
+            <p className="text-xs sm:text-sm text-emerald-200 mt-1 font-space">
               Solved in {formatTime(seconds)} with {mistakes} error(s). +{120 + level * 5} IQ Points!
             </p>
-            <div className="flex items-center justify-center gap-3 mt-3">
+            <div className="flex items-center justify-center gap-3 mt-4">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-xs font-bold font-orbitron tracking-wider transition-all"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl text-white text-xs font-bold font-orbitron tracking-wider cursor-pointer shadow-lg"
               >
                 <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
                 <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={onExit}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
-                Return to Cube
+                Return to Hub
               </button>
             </div>
           </div>

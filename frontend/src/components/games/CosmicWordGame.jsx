@@ -40,8 +40,8 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
   const [targetWord, setTargetWord] = useState('');
   const [clue, setClue] = useState('');
   const [category, setCategory] = useState('');
-  const [scrambledLetters, setScrambledLetters] = useState([]); // [{ id, char, used }]
-  const [assembledLetters, setAssembledLetters] = useState([]); // [char]
+  const [scrambledLetters, setScrambledLetters] = useState([]);
+  const [assembledLetters, setAssembledLetters] = useState([]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(1);
   const [seconds, setSeconds] = useState(0);
@@ -53,7 +53,6 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
 
   // Initialize word based on level
   const initWord = (lvl) => {
-    // Select word based on difficulty pool
     let pool = COSMIC_WORDS;
     if (difficulty === 'EASY') {
       pool = COSMIC_WORDS.filter((w) => w.word.length <= 5);
@@ -68,14 +67,12 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
     setClue(item.clue);
     setCategory(item.category);
 
-    // Scramble letters
     const letters = item.word.split('').map((char, idx) => ({
       id: `${char}_${idx}_${Math.random()}`,
       char,
       used: false
     }));
 
-    // Ensure it doesn't accidentally stay unscrambled
     let scrambled = [...letters].sort(() => Math.random() - 0.5);
     if (scrambled.map((l) => l.char).join('') === item.word && scrambled.length > 2) {
       scrambled.reverse();
@@ -113,7 +110,6 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
       if (key === 'BACKSPACE') {
         handleBackspace();
       } else if (key.length === 1 && key >= 'A' && key <= 'Z') {
-        // Find first unused letter matching this key
         const availableIndex = scrambledLetters.findIndex((l) => !l.used && l.char === key);
         if (availableIndex !== -1) {
           handlePickLetter(scrambledLetters[availableIndex].id);
@@ -140,13 +136,12 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
     setScrambledLetters(newScrambled);
     setAssembledLetters(newAssembled);
 
-    // Check if word is complete
     if (newAssembled.length === targetWord.length) {
       const spelled = newAssembled.map((a) => a.char).join('');
       if (spelled === targetWord) {
         setIsVictory(true);
         sounds.playVictory();
-        confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
+        confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
         const points = (50 + targetWord.length * 15 + level * 5) * streak;
         setScore((s) => s + points);
         setStreak((st) => st + 1);
@@ -192,7 +187,6 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
     setScore((s) => Math.max(0, s - 10));
     onAddScore('word', -10, streak, seconds);
 
-    // Reveal next unplaced correct letter
     const currentLen = assembledLetters.length;
     if (currentLen < targetWord.length) {
       const nextChar = targetWord[currentLen];
@@ -217,43 +211,46 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
       hintDisabled={isVictory}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-purple-500/30 max-w-xl mx-auto shadow-2xl relative text-center">
+      <div className="p-6 md:p-8 rounded-3xl glass-panel cyber-hud border border-purple-500/40 max-w-xl mx-auto shadow-2xl relative text-center overflow-hidden">
+        {/* Glow ambient */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header Info */}
         <div className="flex items-center justify-between mb-4 px-2 text-xs font-mono">
-          <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+          <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
             {diffCfg.label}
           </span>
-          <span className="text-purple-400 font-bold uppercase tracking-wider">
+          <span className="text-purple-300 font-bold uppercase tracking-wider">
             DOMAIN: {category}
           </span>
           <span className="text-slate-400 font-mono">
-            {targetWord.length} LETTERS
+            {targetWord.length} CHARACTERS
           </span>
         </div>
 
         {/* Clue Box */}
-        <div className="p-4 rounded-2xl bg-black/40 border border-white/10 mb-6">
+        <div className="p-4 rounded-2xl bg-black/60 border border-white/15 mb-6 shadow-inner">
           <span className="text-[10px] font-mono uppercase text-purple-400 tracking-widest block mb-1">
             ASTROPHYSICAL DEFINITION
           </span>
-          <p className="text-xs sm:text-sm text-slate-200 font-space italic leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-100 font-space italic leading-relaxed">
             "{clue}"
           </p>
         </div>
 
-        {/* Word Assembly Slots */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-8">
+        {/* Word Assembly Slots with animated glow */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8">
           {Array.from({ length: targetWord.length }).map((_, idx) => {
             const letter = assembledLetters[idx];
             return (
               <div
                 key={idx}
-                className={`w-11 h-14 sm:w-13 sm:h-16 rounded-xl border flex items-center justify-center text-xl sm:text-2xl font-black font-orbitron transition-all ${
+                className={`w-12 h-15 sm:w-14 sm:h-18 rounded-2xl border-2 flex items-center justify-center text-2xl sm:text-3xl font-black font-orbitron transition-all duration-200 ${
                   letter
                     ? isVictory
-                      ? 'bg-emerald-950/80 border-emerald-400 text-emerald-300 ring-2 ring-emerald-400 scale-105 shadow-lg shadow-emerald-950/60'
-                      : 'bg-purple-950/70 border-purple-400 text-white shadow-md ring-1 ring-purple-400/50'
-                    : 'bg-black/50 border-white/15 text-transparent border-dashed'
+                      ? 'bg-emerald-950/90 border-emerald-400 text-emerald-300 ring-4 ring-emerald-400/50 scale-108 shadow-xl shadow-emerald-950/70'
+                      : 'bg-purple-950/80 border-purple-400 text-white shadow-lg ring-2 ring-purple-400/50 animate-pop-scale'
+                    : 'bg-black/60 border-white/20 text-transparent border-dashed'
                 }`}
               >
                 {letter?.char || ''}
@@ -263,16 +260,16 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
         </div>
 
         {/* Available Scrambled Letter Tiles */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-6">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-7">
           {scrambledLetters.map((item) => (
             <button
               key={item.id}
               onClick={() => handlePickLetter(item.id)}
               disabled={item.used || isVictory}
-              className={`w-12 h-14 sm:w-14 sm:h-16 rounded-2xl border font-orbitron font-extrabold text-xl sm:text-2xl transition-all duration-150 active:scale-90 ${
+              className={`w-13 h-15 sm:w-15 sm:h-17 rounded-2xl border-2 font-orbitron font-black text-2xl sm:text-3xl transition-all duration-150 active:scale-90 cursor-pointer ${
                 item.used
                   ? 'opacity-20 border-white/5 bg-black/40 cursor-not-allowed scale-95'
-                  : 'bg-white/10 hover:bg-purple-500/25 border-white/20 text-white hover:border-purple-400 shadow-lg hover:scale-105'
+                  : 'bg-white/10 hover:bg-purple-500/30 border-white/20 text-white hover:border-purple-400 shadow-xl hover:scale-105 hover:shadow-purple-500/30'
               }`}
             >
               {item.char}
@@ -282,46 +279,46 @@ export default function CosmicWordGame({ onExit, onAddScore, initialLevel = 1 })
 
         {/* Action Controls (Backspace & Shuffle) */}
         {!isVictory && (
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3.5">
             <button
               onClick={handleShuffle}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-mono font-semibold text-slate-300 hover:text-white transition-all active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/15 text-xs font-mono font-bold text-slate-300 hover:text-white transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <Shuffle className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Shuffle</span>
+              <Shuffle className="w-4 h-4 text-cyan-400" />
+              <span>Shuffle Tiles</span>
             </button>
             <button
               onClick={handleBackspace}
               disabled={assembledLetters.length === 0}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-950/70 border border-red-500/40 text-xs font-mono font-semibold text-red-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-950/40 hover:bg-red-950/70 border border-red-500/50 text-xs font-mono font-bold text-red-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer shadow-md"
             >
-              <Delete className="w-3.5 h-3.5" />
-              <span>Delete</span>
+              <Delete className="w-4 h-4" />
+              <span>Backspace</span>
             </button>
           </div>
         )}
 
         {/* Victory Level Clear Banner */}
         {isVictory && (
-          <div className="mt-6 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-center animate-fade-in w-full">
-            <div className="flex items-center justify-center gap-2 text-emerald-400 font-orbitron font-bold text-lg">
-              <CheckCircle2 className="w-5 h-5" />
+          <div className="mt-6 p-6 rounded-3xl bg-emerald-950/90 border-2 border-emerald-400 text-center animate-pop-scale w-full shadow-2xl shadow-emerald-950/60">
+            <div className="flex items-center justify-center gap-2 text-emerald-300 font-orbitron font-extrabold text-xl">
+              <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               <span>SYNTHESIZED: {targetWord}!</span>
             </div>
-            <p className="text-xs text-emerald-200 mt-1">
+            <p className="text-xs sm:text-sm text-emerald-200 mt-1.5 mb-5 font-space">
               Decoded in {formatTime(seconds)}! +{50 + targetWord.length * 15 + level * 5} Cosmic Points!
             </p>
-            <div className="flex items-center justify-center gap-3 mt-3">
+            <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-xs font-bold font-orbitron tracking-wider transition-all"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl text-white text-xs font-bold font-orbitron tracking-wider cursor-pointer shadow-lg"
               >
                 <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
                 <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={onExit}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
                 Return to Hub
               </button>

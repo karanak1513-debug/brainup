@@ -105,28 +105,33 @@ export default function CosmicRiddlesGame({ onExit, onAddScore, initialLevel = 1
       hintDisabled={isAnswered || hintText !== null}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-pink-500/30 max-w-2xl mx-auto shadow-2xl relative overflow-hidden">
-        {/* Glow backdrop */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="cyber-hud relative p-6 md:p-8 rounded-3xl glass-panel border border-pink-500/30 max-w-2xl mx-auto shadow-2xl overflow-hidden backdrop-blur-xl">
+        {/* Glow backdrop & laser ambient */}
+        <div className="absolute -top-20 -right-20 w-48 h-48 bg-pink-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
+        <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {currentRiddle && (
           <>
-            <div className="flex items-center justify-between text-xs font-mono text-pink-400 mb-3 uppercase tracking-wider">
-              <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+            <div className="flex items-center justify-between text-xs font-mono text-pink-400 mb-4 uppercase tracking-wider">
+              <span className={`px-3 py-1 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color} shadow-sm`}>
                 {diffCfg.label}
               </span>
-              <span>{currentRiddle.title}</span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-ping" />
+                {currentRiddle.title}
+              </span>
             </div>
 
-            {/* Question Card */}
-            <div className="p-5 rounded-2xl bg-black/40 border border-white/10 mb-6">
-              <p className="text-base md:text-lg text-slate-100 font-medium leading-relaxed italic">
+            {/* Question Card with cyber aura */}
+            <div className="p-6 rounded-2xl bg-black/50 border border-pink-500/20 mb-6 shadow-inner relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-pink-500 to-purple-500" />
+              <p className="text-base md:text-lg text-slate-100 font-medium leading-relaxed italic pl-2">
                 "{currentRiddle.question}"
               </p>
             </div>
 
             {/* Options */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
               {currentRiddle.options.map((opt) => {
                 const isChosen = selectedOption === opt;
                 const isRight = isAnswered && opt === currentRiddle.answer;
@@ -137,18 +142,18 @@ export default function CosmicRiddlesGame({ onExit, onAddScore, initialLevel = 1
                     key={opt}
                     onClick={() => handleSelectOption(opt)}
                     disabled={isAnswered}
-                    className={`p-4 rounded-2xl border text-left font-space text-sm font-semibold transition-all duration-200 active:scale-98 ${
+                    className={`p-4 rounded-2xl border text-left font-space text-sm font-semibold transition-all duration-200 transform hover:-translate-y-0.5 active:scale-98 ${
                       isRight
-                        ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400 shadow-lg shadow-emerald-950/60'
+                        ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400 shadow-lg shadow-emerald-950/60 animate-pop-scale'
                         : isWrong
-                        ? 'bg-red-950/80 border-red-500 text-red-200 ring-2 ring-red-400'
-                        : 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-200 hover:border-pink-400/60'
+                        ? 'bg-red-950/80 border-red-500 text-red-200 ring-2 ring-red-400 animate-shake'
+                        : 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-200 hover:border-pink-400/60 hover:shadow-md hover:shadow-pink-500/10'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <span>{opt}</span>
-                      {isRight && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                      {isWrong && <XCircle className="w-4 h-4 text-red-400" />}
+                      {isRight && <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 animate-bounce" />}
+                      {isWrong && <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />}
                     </div>
                   </button>
                 );
@@ -157,19 +162,19 @@ export default function CosmicRiddlesGame({ onExit, onAddScore, initialLevel = 1
 
             {/* Explanation & Advance to Next Level */}
             {isAnswered && (
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs md:text-sm text-slate-300 animate-fade-in flex flex-col gap-3">
+              <div className="p-5 rounded-2xl bg-black/60 border border-pink-500/30 text-xs md:text-sm text-slate-300 animate-fade-in flex flex-col gap-4 shadow-xl">
                 <div>
-                  <span className="font-bold text-pink-400 font-mono">ASTROPHYSICAL PRINCIPLE: </span>
-                  <span>{currentRiddle.explanation}</span>
+                  <span className="font-bold text-pink-400 font-mono tracking-wide">ASTROPHYSICAL PRINCIPLE: </span>
+                  <span className="text-slate-200">{currentRiddle.explanation}</span>
                 </div>
 
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                    className="btn-cosmic flex items-center gap-2 px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs"
+                    className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider shadow-lg shadow-pink-500/20 active:scale-95 transition-all"
                   >
                     <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 animate-pulse" />
                   </button>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import GameWrapper from '../GameWrapper';
 import confetti from 'canvas-confetti';
 import { sounds } from '../../utils/soundFX';
 import { getLevelDifficulty, DIFFICULTY_CONFIG } from '../../utils/levels';
-import { Zap, RotateCcw, Trophy, ArrowRight } from 'lucide-react';
+import { Zap, RotateCcw, Trophy, ArrowRight, Flame, Clock, Sparkles } from 'lucide-react';
 
 export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) {
   const [level, setLevel] = useState(initialLevel);
@@ -17,6 +17,7 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
   const [solvedCount, setSolvedCount] = useState(0);
   const [eliminatedChoices, setEliminatedChoices] = useState([]);
   const [hintText, setHintText] = useState(null);
+  const [floatingScore, setFloatingScore] = useState(null);
 
   const difficulty = getLevelDifficulty(level);
   const diffCfg = DIFFICULTY_CONFIG[difficulty];
@@ -61,6 +62,7 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
     setSolvedCount(0);
     setEliminatedChoices([]);
     setHintText(null);
+    setFloatingScore(null);
     fetchProblems(level);
   }, [level]);
 
@@ -72,7 +74,7 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
         if (t <= 1) {
           setIsActive(false);
           sounds.playVictory();
-          confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+          confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
           return 0;
         }
         return t - 1;
@@ -82,6 +84,7 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
   }, [isActive, timeLeft]);
 
   const currentProblem = problems[problemIndex];
+  const isEmergencyTime = timeLeft <= 15 && isActive;
 
   const handleChoice = (val) => {
     if (!isActive || !currentProblem) return;
@@ -95,6 +98,10 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
       setStreak(newStreak);
       setSolvedCount((c) => c + 1);
       onAddScore('math', points, newStreak, 60 - timeLeft);
+
+      // Trigger floating score particle
+      setFloatingScore(`+${points}`);
+      setTimeout(() => setFloatingScore(null), 600);
 
       setEliminatedChoices([]);
       setHintText(null);
@@ -126,6 +133,7 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
     setSolvedCount(0);
     setEliminatedChoices([]);
     setHintText(null);
+    setFloatingScore(null);
     fetchProblems(level);
   };
 
@@ -144,46 +152,64 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
       hintDisabled={!isActive || eliminatedChoices.length > 0}
       hintText={hintText}
     >
-      <div className="p-6 md:p-8 rounded-3xl glass-panel border border-amber-500/30 max-w-xl mx-auto shadow-2xl relative text-center">
+      <div className={`p-6 md:p-8 rounded-3xl glass-panel cyber-hud border max-w-xl mx-auto shadow-2xl relative text-center transition-all ${
+        isEmergencyTime ? 'border-red-500/80 shadow-red-950/60 ring-2 ring-red-500/30' : 'border-amber-500/40'
+      }`}>
+        {/* Glow ambient orb */}
+        <div className={`absolute -top-24 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl pointer-events-none transition-all ${
+          isEmergencyTime ? 'bg-red-500/25' : 'bg-amber-500/20'
+        }`} />
+
         {isActive ? (
           <>
             {/* Header info */}
             <div className="flex items-center justify-between mb-4 px-2 text-xs font-mono">
-              <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-bold ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
+              <span className={`px-3 py-1 rounded-full border text-[11px] font-bold shadow-md ${diffCfg.bg} ${diffCfg.border} ${diffCfg.color}`}>
                 {diffCfg.label}
               </span>
               <span className="text-amber-400 font-bold">Solved: {solvedCount}</span>
               {combo > 1 && (
-                <span className="flex items-center gap-1 text-amber-300 font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/40 animate-pulse">
-                  <Zap className="w-3 h-3 fill-current" />
+                <span className="flex items-center gap-1.5 text-amber-300 font-bold bg-amber-950/70 px-3 py-1 rounded-full border border-amber-500/50 animate-pulse shadow-md">
+                  <Flame className="w-3.5 h-3.5 text-amber-400 fill-current animate-bounce" />
                   {combo} COMBO!
                 </span>
               )}
             </div>
 
-            {/* Time progress bar */}
-            <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden mb-6 border border-white/10">
+            {/* Time progress bar with emergency pulse */}
+            <div className="w-full h-2.5 bg-black/60 rounded-full overflow-hidden mb-6 border border-white/10 shadow-inner">
               <div
-                className="h-full bg-gradient-to-r from-amber-500 to-cyan-400 transition-all duration-1000 ease-linear"
+                className={`h-full transition-all duration-1000 ease-linear ${
+                  isEmergencyTime
+                    ? 'bg-gradient-to-r from-red-600 to-rose-400 animate-pulse'
+                    : 'bg-gradient-to-r from-amber-500 via-purple-500 to-cyan-400'
+                }`}
                 style={{ width: `${(timeLeft / 60) * 100}%` }}
               />
             </div>
 
-            {/* Math Formula Card */}
+            {/* Math Formula Card with floating score */}
             {currentProblem && (
-              <div className="py-8 px-4 rounded-3xl bg-black/50 border border-amber-500/40 shadow-xl mb-6">
+              <div className="relative py-8 px-4 rounded-3xl bg-black/75 border-2 border-amber-500/50 shadow-2xl mb-6 overflow-hidden">
                 <span className="text-xs uppercase font-mono text-amber-400 tracking-widest block mb-2">
-                  COMPUTE VALUE:
+                  COMPUTE QUANTUM EXPRESSION:
                 </span>
-                <span className="text-3xl sm:text-5xl font-black font-orbitron text-white tracking-wider">
+                <span className="text-4xl sm:text-6xl font-black font-orbitron text-white tracking-wider drop-shadow-lg">
                   {currentProblem.question}
                 </span>
+
+                {/* Floating Score Popup */}
+                {floatingScore && (
+                  <div className="absolute top-2 right-4 text-emerald-400 font-orbitron font-black text-2xl animate-pop-scale">
+                    {floatingScore}
+                  </div>
+                )}
               </div>
             )}
 
             {/* 4 Choices */}
             {currentProblem && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 {currentProblem.choices.map((choice) => {
                   const isEliminated = eliminatedChoices.includes(choice);
                   return (
@@ -191,10 +217,10 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
                       key={choice}
                       onClick={() => handleChoice(choice)}
                       disabled={isEliminated}
-                      className={`h-16 rounded-2xl border font-orbitron text-2xl font-bold transition-all duration-150 active:scale-95 ${
+                      className={`h-18 rounded-2xl border-2 font-orbitron text-2xl sm:text-3xl font-black transition-all duration-150 active:scale-95 cursor-pointer ${
                         isEliminated
                           ? 'opacity-20 line-through bg-black/40 border-white/5 cursor-not-allowed'
-                          : 'bg-white/10 hover:bg-amber-500/20 border-white/20 hover:border-amber-400 text-white shadow-md'
+                          : 'bg-white/10 hover:bg-amber-500/25 border-white/20 hover:border-amber-400 text-white shadow-xl hover:scale-102 hover:shadow-amber-500/25'
                       }`}
                     >
                       {choice}
@@ -205,11 +231,11 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
             )}
           </>
         ) : (
-          /* Time Expired / Final Scoreboard with Advance */
-          <div className="py-6 flex flex-col items-center">
+          /* Time Expired / Final Scoreboard */
+          <div className="py-6 flex flex-col items-center animate-pop-scale">
             <Trophy className="w-16 h-16 text-amber-400 mb-3 animate-bounce" />
-            <h3 className="text-2xl md:text-3xl font-orbitron font-extrabold text-white">
-              LEVEL {level} SPRINT COMPLETED!
+            <h3 className="text-2xl md:text-3xl font-orbitron font-black text-white">
+              LEVEL {level} SPRINT COMPLETE!
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 mb-5">
               Difficulty: <span className={`font-bold ${diffCfg.color}`}>{diffCfg.label}</span>
@@ -218,34 +244,34 @@ export default function RapidMathGame({ onExit, onAddScore, initialLevel = 1 }) 
             <div className="grid grid-cols-2 gap-3 w-full max-w-sm mb-6">
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                 <span className="text-xs font-mono text-slate-400 block">TOTAL SCORE</span>
-                <span className="text-2xl font-orbitron font-bold text-amber-400">{score} PTS</span>
+                <span className="text-2xl sm:text-3xl font-orbitron font-black text-amber-400">{score} PTS</span>
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                 <span className="text-xs font-mono text-slate-400 block">SOLVED</span>
-                <span className="text-2xl font-orbitron font-bold text-cyan-400">{solvedCount}</span>
+                <span className="text-2xl sm:text-3xl font-orbitron font-black text-cyan-400">{solvedCount}</span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => setLevel((l) => (l < 100 ? l + 1 : 1))}
-                className="btn-cosmic flex items-center gap-1.5 px-6 py-3 rounded-2xl font-orbitron font-bold text-xs"
+                className="btn-cosmic flex items-center gap-2 px-6 py-3 rounded-2xl font-orbitron font-bold text-xs cursor-pointer shadow-lg"
               >
                 <span>{level < 100 ? `ADVANCE TO LEVEL ${level + 1}` : 'RESTART LEVEL 1'}</span>
                 <ArrowRight className="w-4 h-4 text-cyan-400" />
               </button>
               <button
                 onClick={restartGame}
-                className="flex items-center gap-1.5 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold"
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Replay Level</span>
               </button>
               <button
                 onClick={onExit}
-                className="px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/15 text-slate-300 text-xs font-semibold"
+                className="px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/15 text-slate-300 text-xs font-semibold cursor-pointer transition-all"
               >
-                Return to Cube
+                Return to Hub
               </button>
             </div>
           </div>
