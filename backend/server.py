@@ -1252,10 +1252,13 @@ if dist_dir and os.path.exists(dist_dir):
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     async def serve_frontend(full_path: str):
-        file_path = os.path.join(dist_dir, full_path)
-        if full_path and os.path.exists(file_path) and os.path.isfile(file_path):
+        if full_path == "api" or full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
+        real_dist = os.path.realpath(dist_dir)
+        file_path = os.path.realpath(os.path.join(dist_dir, full_path))
+        if full_path and file_path.startswith(real_dist) and os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
         index_file = os.path.join(dist_dir, "index.html")
         if os.path.exists(index_file):
