@@ -918,17 +918,21 @@ export default function AdminPanel({ currentUser, onReturnToHub }) {
         </div>
       )}
 
-      {/* 6. Tab 3: Arena Intelligence (6 Game Analytics) */}
+      {/* 6. Tab 3: Arena Intelligence (10 Game Analytics) */}
       {activeTab === 'arenas' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { id: 'sudoku', name: 'Sudoku Blitz', face: 'Face 1', desc: '4x4 Matrix Logic Verification', color: 'from-cyan-500/20 to-blue-600/20', border: 'border-cyan-500/40' },
-              { id: 'riddles', name: 'Cosmic Riddles', face: 'Face 2', desc: 'Astrophysical & Paradox Deduction', color: 'from-purple-500/20 to-indigo-600/20', border: 'border-purple-500/40' },
-              { id: 'logic', name: 'Logic & Reasoning', face: 'Face 3', desc: 'Cognitive Sequence Pattern Deduction', color: 'from-amber-500/20 to-orange-600/20', border: 'border-amber-500/40' },
-              { id: 'math', name: 'Rapid Math Sprint', face: 'Face 4', desc: '60s Arithmetic Under Cosmic Pressure', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/40' },
-              { id: 'arrow', name: 'Arrow Treasure Hunt', face: 'Face 5', desc: 'Spatial Vector Memory & Navigation', color: 'from-rose-500/20 to-pink-600/20', border: 'border-rose-500/40' },
-              { id: 'memory', name: 'Quantum Memory Grid', face: 'Face 6', desc: 'Entanglement Pair Pattern Recall', color: 'from-violet-500/20 to-fuchsia-600/20', border: 'border-violet-500/40' }
+              { id: 'sudoku', name: 'Sudoku Blitz', face: 'Face 1 • Dice', desc: '4x4 Matrix Logic Verification', color: 'from-cyan-500/20 to-blue-600/20', border: 'border-cyan-500/40' },
+              { id: 'riddles', name: 'Cosmic Riddles', face: 'Face 2 • Dice', desc: 'Astrophysical & Paradox Deduction', color: 'from-purple-500/20 to-indigo-600/20', border: 'border-purple-500/40' },
+              { id: 'logic', name: 'Logic & Reasoning', face: 'Face 3 • Dice', desc: 'Cognitive Sequence Pattern Deduction', color: 'from-amber-500/20 to-orange-600/20', border: 'border-amber-500/40' },
+              { id: 'math', name: 'Rapid Math Sprint', face: 'Face 4 • Dice', desc: '60s Arithmetic Under Cosmic Pressure', color: 'from-emerald-500/20 to-teal-600/20', border: 'border-emerald-500/40' },
+              { id: 'arrow', name: 'Arrow Treasure Hunt', face: 'Face 5 • Dice', desc: 'Spatial Vector Memory & Navigation', color: 'from-rose-500/20 to-pink-600/20', border: 'border-rose-500/40' },
+              { id: 'memory', name: 'Quantum Memory Grid', face: 'Face 6 • Dice', desc: 'Entanglement Pair Pattern Recall', color: 'from-violet-500/20 to-fuchsia-600/20', border: 'border-violet-500/40' },
+              { id: 'stroop', name: 'Chromatic Reflex', face: 'Arena 7 • Arcade', desc: 'Stroop Interference & Color-Ink Inhibition', color: 'from-cyan-500/20 to-teal-600/20', border: 'border-cyan-400/40' },
+              { id: 'word', name: 'Cosmic Word Weaver', face: 'Arena 8 • Arcade', desc: 'Quantum Cosmology Anagram Synthesis', color: 'from-fuchsia-500/20 to-purple-600/20', border: 'border-fuchsia-500/40' },
+              { id: 'spatial', name: 'Spatial Matrix', face: 'Arena 9 • Arcade', desc: '3D Mental Rotation & Mirror Rejection', color: 'from-emerald-500/20 to-cyan-600/20', border: 'border-emerald-400/40' },
+              { id: 'reactor', name: 'Quantum Reactor', face: 'Arena 10 • Arcade', desc: '2048 Isotope Fusion to Singularity', color: 'from-rose-500/20 to-orange-600/20', border: 'border-rose-400/40' }
             ].map((arena) => {
               const stats = overview?.gamesBreakdown?.[arena.id] || { played: 0, won: 0, score: 0 };
               const winRate = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0;

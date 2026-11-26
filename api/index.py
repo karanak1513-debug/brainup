@@ -58,7 +58,11 @@ DEFAULT_DATA = {
                 "logic": {"played": 6, "won": 5, "score": 180},
                 "math": {"played": 4, "won": 4, "score": 120},
                 "arrow": {"played": 3, "won": 3, "score": 90},
-                "memory": {"played": 2, "won": 2, "score": 60}
+                "memory": {"played": 2, "won": 2, "score": 60},
+                "stroop": {"played": 0, "won": 0, "score": 0},
+                "word": {"played": 0, "won": 0, "score": 0},
+                "spatial": {"played": 0, "won": 0, "score": 0},
+                "reactor": {"played": 0, "won": 0, "score": 0}
             }
         }
     },
@@ -208,17 +212,6 @@ if "systemAnnouncement" not in DATA:
 
 # ----------------- Endpoints -----------------
 
-@app.api_route("/", methods=["GET", "HEAD"])
-def root():
-    return {
-        "status": "online",
-        "multiverse": "BrainUp Universe Engine",
-        "health": "/api/health",
-        "backend": "Render Cloud Platform",
-        "version": "1.0.0",
-        "timestamp": time.time()
-    }
-
 @app.api_route("/health", methods=["GET", "HEAD"])
 @app.api_route("/api/health", methods=["GET", "HEAD"])
 def health():
@@ -295,7 +288,11 @@ def google_auth(payload: AuthRequest):
                 "logic": {"played": 0, "won": 0, "score": 0},
                 "math": {"played": 0, "won": 0, "score": 0},
                 "arrow": {"played": 0, "won": 0, "score": 0},
-                "memory": {"played": 0, "won": 0, "score": 0}
+                "memory": {"played": 0, "won": 0, "score": 0},
+                "stroop": {"played": 0, "won": 0, "score": 0},
+                "word": {"played": 0, "won": 0, "score": 0},
+                "spatial": {"played": 0, "won": 0, "score": 0},
+                "reactor": {"played": 0, "won": 0, "score": 0}
             }
         }
         # Add to leaderboard if not present
@@ -411,7 +408,11 @@ def admin_overview(actor_email: str):
         "logic": {"played": 0, "won": 0, "score": 0},
         "math": {"played": 0, "won": 0, "score": 0},
         "arrow": {"played": 0, "won": 0, "score": 0},
-        "memory": {"played": 0, "won": 0, "score": 0}
+        "memory": {"played": 0, "won": 0, "score": 0},
+        "stroop": {"played": 0, "won": 0, "score": 0},
+        "word": {"played": 0, "won": 0, "score": 0},
+        "spatial": {"played": 0, "won": 0, "score": 0},
+        "reactor": {"played": 0, "won": 0, "score": 0}
     }
     for u in users.values():
         stats = u.get("gameStats", {})
@@ -1270,12 +1271,21 @@ if dist_dir and os.path.exists(dist_dir):
             return FileResponse(index_file)
         return {"status": "ok", "message": "BrainUp backend running. Frontend dist not found."}
 else:
-    @app.get("/")
+    @app.api_route("/", methods=["GET", "HEAD"])
     async def root_fallback():
-        return {"status": "ok", "message": "BrainUp API is active. Run 'npm run build' in frontend directory to serve the frontend on this port."}
+        return {
+            "status": "online",
+            "multiverse": "BrainUp Universe Engine",
+            "health": "/api/health",
+            "backend": "Render Cloud Platform",
+            "version": "1.0.0",
+            "timestamp": time.time()
+        }
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
     print("=" * 60)
-    print(">> BrainUp Multiverse Engine is powering up on http://localhost:8000")
+    print(f">> BrainUp Multiverse Engine is powering up on http://{host}:{port}")
     print("=" * 60)
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=host, port=port)

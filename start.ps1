@@ -6,10 +6,17 @@ Write-Host "========================================================" -Foregroun
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
 
-Write-Host "Building frontend assets..." -ForegroundColor Yellow
+Write-Host "[1/2] Building frontend assets..." -ForegroundColor Yellow
 Set-Location "$scriptDir\frontend"
+if (-not (Test-Path "node_modules")) {
+    npm install
+}
 npm run build
 
-Write-Host "Starting BrainUp Unified Server on http://localhost:8000..." -ForegroundColor Green
+Write-Host "[2/2] Starting BrainUp Unified Server on http://localhost:8000..." -ForegroundColor Green
 Set-Location "$scriptDir\backend"
-python server.py
+if (Test-Path ".venv\Scripts\python.exe") {
+    & ".venv\Scripts\python.exe" server.py
+} else {
+    python server.py
+}
